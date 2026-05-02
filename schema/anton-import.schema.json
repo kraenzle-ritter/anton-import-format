@@ -1,0 +1,57 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://github.com/kraenzle-ritter/anton-import-format/schema/anton-import.schema.json",
+    "title": "Anton Import Format",
+    "description": "metadata.json wire-format contract between agate (SIP producer), Anton's Excel-Import, and Anton's AgateImportHelper.",
+    "type": "array",
+    "items": {
+        "oneOf": [
+            { "$ref": "#/$defs/collection" },
+            { "$ref": "#/$defs/record" }
+        ]
+    },
+    "$defs": {
+        "collection": {
+            "type": "object",
+            "title": "Collection entry",
+            "description": "A non-leaf node in the AntonObject hierarchy.",
+            "required": ["uuid", "type", "title"],
+            "properties": {
+                "type": { "const": "collection" },
+                "uuid": { "type": "string" },
+                "title": { "type": "string" }
+            },
+            "additionalProperties": true
+        },
+        "record": {
+            "type": "object",
+            "title": "Record entry",
+            "description": "A leaf node carrying one or more files.",
+            "required": ["uuid", "type", "title", "files"],
+            "properties": {
+                "type": { "const": "record" },
+                "uuid": { "type": "string" },
+                "title": { "type": "string" },
+                "files": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "$ref": "#/$defs/file" }
+                }
+            },
+            "additionalProperties": true
+        },
+        "file": {
+            "type": "object",
+            "title": "File submetadata",
+            "description": "A single file inside a record.files array.",
+            "required": ["uuid", "name", "file_path", "mime_type"],
+            "properties": {
+                "uuid": { "type": "string" },
+                "name": { "type": "string" },
+                "file_path": { "type": "string" },
+                "mime_type": { "type": "string" }
+            },
+            "additionalProperties": true
+        }
+    }
+}
