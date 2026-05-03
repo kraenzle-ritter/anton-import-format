@@ -6,7 +6,7 @@
 
   "type": "object",
   "additionalProperties": true,
-  "required": ["version", "tenant", "generator", "entries"],
+  "required": ["version", "generator", "entries"],
 
   "properties": {
     "version": {
@@ -15,13 +15,13 @@
       "pattern": "^[0-9]+\\.[0-9]+$"
     },
     "tenant": {
-      "type": "string",
-      "description": "Anton tenant slug for which the import is intended (e.g. \"kba\", \"gosteli\").",
+      "type": ["string", "null"],
+      "description": "Anton tenant slug for which the import is intended (e.g. \"kba\", \"gosteli\"). Optional and nullable: producer-side pipelines (notably agate) often don't know the target tenant; the consumer-side importer overrides this with its own setting('slug') anyway.",
       "minLength": 1
     },
     "generator": {
       "type": "string",
-      "description": "Identifier of the producing tool, including version (e.g. \"agate@0.1.0\", \"anton-excel-import\").",
+      "description": "Identifier of the producing tool, including version. Convention: \"<package>@<version>\" (e.g. \"agate@0.1.0\", \"anton-excel-import@0.58.2\").",
       "minLength": 1
     },
     "defaults": {

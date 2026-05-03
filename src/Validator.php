@@ -6,16 +6,16 @@ namespace KraenzleRitter\AntonImportFormat;
 
 use JsonException;
 use Opis\JsonSchema\Errors\ErrorFormatter;
-use Opis\JsonSchema\Errors\ValidationError;
+use Opis\JsonSchema\Errors\ValidationError as OpisValidationError;
 use stdClass;
 
 /**
  * Framework-free validator for Anton's import metadata.json.
  *
- * Single public method, accepts string|array|stdClass, returns a list of
- * structured errors. Empty list = valid. Exceptions are reserved for
- * catastrophic conditions (malformed JSON in string input, schema file
- * missing); validation failures are *always* reported via the return list.
+ * Returns a `ValidationResult` (with `valid` flag and an `errors` array
+ * of `ValidationError` objects). Exceptions are reserved for catastrophic
+ * conditions (malformed JSON in string input, schema file missing);
+ * validation failures are always reported via the result.
  */
 final class Validator
 {
@@ -23,12 +23,11 @@ final class Validator
      * Validate input against the bundled anton-import schema.
      *
      * @param  string|array<mixed>|stdClass  $input
-     * @return list<array{path: string, keyword: string, message: string}>
      *
-     * @throws JsonException                When $input is a malformed JSON string.
-     * @throws \RuntimeException            When the schema file is unreadable.
+     * @throws JsonException        When $input is a malformed JSON string.
+     * @throws \RuntimeException    When the schema file is unreadable.
      */
-    public function validate(string|array|stdClass $input): array
+    public function validate(string|array|stdClass $input): ValidationResult
     {
         $data = $this->normalize($input);
 
@@ -36,54 +35,57 @@ final class Validator
         $result = $opisValidator->validate($data, SchemaLoader::SCHEMA_ID);
 
         if ($result->isValid()) {
-            return [];
+            return ValidationResult::valid();
         }
 
         $error = $result->error();
         if ($error === null) {
-            return [];
+            return ValidationResult::valid();
         }
 
-        return $this->formatErrors($error);
+        return ValidationResult::invalid($this->formatErrors($error));
     }
 
     /**
-     * Validate and additionally compare the input's `version` field with the
-     * loaded schema's major.minor. A mismatch is reported as a structured
-     * warning (path /version, keyword schema_version_mismatch) appended to
-     * the error list — the result remains "valid" if no other errors exist
-     * and the caller decides whether to treat warnings as failure.
+     * Validate and additionally compare the input's `version` field with
+     * the loaded schema's major.minor. A mismatch is appended to the
+     * result's errors as a structured warning (path /version, keyword
+     * `schema_version_mismatch`); the `valid` flag still reflects only
+     * structural validation.
      *
      * @param  string|array<mixed>|stdClass  $input
-     * @return list<array{path: string, keyword: string, message: string}>
      *
      * @throws JsonException
      * @throws \RuntimeException
      */
-    public function validateWithVersionWarning(string|array|stdClass $input): array
+    public function validateWithVersionWarning(string|array|stdClass $input): ValidationResult
     {
-        $errors = $this->validate($input);
+        $base = $this->validate($input);
 
         $data = $this->normalize($input);
         $declaredVersion = $this->extractDeclaredVersion($data);
         if ($declaredVersion === null) {
-            return $errors;
+            return $base;
         }
 
         $schemaVersion = SchemaLoader::schemaVersion();
-        if ($declaredVersion !== $schemaVersion) {
-            $errors[] = [
-                'path' => '/version',
-                'keyword' => 'schema_version_mismatch',
-                'message' => sprintf(
-                    'Document declares version "%s" but loaded schema is "%s".',
-                    $declaredVersion,
-                    $schemaVersion
-                ),
-            ];
+        if ($declaredVersion === $schemaVersion) {
+            return $base;
         }
 
-        return $errors;
+        $warning = new ValidationError(
+            path: '/version',
+            keyword: 'schema_version_mismatch',
+            message: sprintf(
+                'Document declares version "%s" but loaded schema is "%s".',
+                $declaredVersion,
+                $schemaVersion
+            ),
+        );
+
+        $errors = [...$base->errors, $warning];
+
+        return new ValidationResult($base->valid, $errors);
     }
 
     /**
@@ -107,38 +109,39 @@ final class Validator
     }
 
     /**
-     * @return list<array{path: string, keyword: string, message: string}>
+     * @return list<ValidationError>
      */
-    private function formatErrors(ValidationError $error): array
+    private function formatErrors(OpisValidationError $error): array
     {
         $formatter = new ErrorFormatter();
         $formatted = $formatter->format($error, true);
 
         $list = [];
         foreach ($formatted as $path => $messages) {
+            $pathString = is_string($path) ? $path : '/';
             if (is_array($messages)) {
                 foreach ($messages as $message) {
-                    $list[] = [
-                        'path' => is_string($path) ? $path : '/',
-                        'keyword' => $error->keyword(),
-                        'message' => is_string($message) ? $message : (string) json_encode($message),
-                    ];
+                    $list[] = new ValidationError(
+                        path: $pathString,
+                        keyword: $error->keyword(),
+                        message: is_string($message) ? $message : (string) json_encode($message),
+                    );
                 }
             } else {
-                $list[] = [
-                    'path' => is_string($path) ? $path : '/',
-                    'keyword' => $error->keyword(),
-                    'message' => is_string($messages) ? $messages : (string) json_encode($messages),
-                ];
+                $list[] = new ValidationError(
+                    path: $pathString,
+                    keyword: $error->keyword(),
+                    message: is_string($messages) ? $messages : (string) json_encode($messages),
+                );
             }
         }
 
         if ($list === []) {
-            $list[] = [
-                'path' => '/',
-                'keyword' => $error->keyword(),
-                'message' => $error->message(),
-            ];
+            $list[] = new ValidationError(
+                path: '/',
+                keyword: $error->keyword(),
+                message: $error->message(),
+            );
         }
 
         return $list;

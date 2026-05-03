@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased — pre-tag refinements (2026-05-03 evening)
+
+After the initial main push, two cross-repo issues from agate's side
+prompted the following adjustments before the v0.1.0 tag:
+
+- **`Validator::validate()` now returns `ValidationResult`**, a
+  `final readonly` value object with a `valid: bool` flag and an
+  `errors: list<ValidationError>` array (instead of a flat
+  `array<int, array{...}>`). Aligns with agate's existing wiring and
+  the sibling-package convention (`puidentify`, `nara-risk`).
+  Self-documenting `if (! $result->valid)` instead of
+  `count($errors) === 0`.
+- **`tenant` is now optional** at the top level (and nullable). Producer
+  pipelines that don't know the target Anton tenant (notably agate)
+  may omit it; Anton's importer overrides with `setting('slug')`
+  regardless.
+- **New `docs/producers.md`** — concrete field-by-field mapping guide
+  for agate's pre-restructure emit (`parent_uuid`, `creation_*`,
+  `scope_and_content`, …) to v0.1 wrapper shape.
+- **New `tests/Fixtures/agate-target/folder-input.json`** — schema-valid
+  reference for what agate's `CreateMetadataJsonStep` should emit
+  after its restructure. Companion to the read-only
+  `legacy-agate-output/` snapshots.
+
 ## v0.1.0 — Initial release (2026-05-03)
 
 First public release of the canonical Anton-import format.

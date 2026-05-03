@@ -34,15 +34,27 @@ the package as a Composer dependency:
 use KraenzleRitter\AntonImportFormat\Validator;
 
 $validator = new Validator();
+$result = $validator->validate($metadataJson); // string | array | stdClass
 
-$errors = $validator->validate($metadataJson); // string | array | stdClass
-if ($errors === []) {
-    // valid — proceed with import
+if ($result->valid) {
+    // proceed with import
 } else {
-    // each $error has 'path', 'keyword', 'message' keys
-    foreach ($errors as $error) {
-        printf("[%s] %s: %s\n", $error['keyword'], $error['path'], $error['message']);
+    foreach ($result->errors as $error) {
+        // each error has ->path, ->keyword, ->message
+        printf("[%s] %s: %s\n", $error->keyword, $error->path, $error->message);
     }
+}
+```
+
+`Validator::validate()` returns a `ValidationResult`:
+
+```php
+final readonly class ValidationResult {
+    public bool $valid;
+    /** @var list<ValidationError> */
+    public array $errors;
+
+    public function toArray(): array;  // for JSON-serialisation into ImportEvent / pipeline-result payloads
 }
 ```
 
@@ -52,8 +64,9 @@ If you want a structured warning when the document declares a `version`
 that does not match the loaded schema's major.minor:
 
 ```php
-$errors = $validator->validateWithVersionWarning($metadataJson);
-// errors may include {path: '/version', keyword: 'schema_version_mismatch', ...}
+$result = $validator->validateWithVersionWarning($metadataJson);
+// $result->errors may include a {path: '/version', keyword: 'schema_version_mismatch', ...} entry.
+// $result->valid still reflects only structural validation — the version mismatch is informational.
 ```
 
 ## Schema reference
@@ -165,6 +178,20 @@ Under `tests/Fixtures/`:
 - `valid/full.json` — exercises every schema feature.
 - `broken/*.json` — intentionally-broken cases, each pinning the
   validator's error reporting against regression.
+- `agate-target/folder-input.json` — the v0.1 form that agate's
+  `CreateMetadataJsonStep` should emit *after* migration. Companion
+  to `legacy-agate-output/folder-input.json` (pre-restructure).
+- `legacy-agate-output/*.json` — read-only snapshots of agate's
+  pre-restructure emit. **Not validated** against the current
+  schema; kept as migration baseline.
+
+## Producer mapping
+
+If you're emitting `metadata.json` from a producer (agate's
+`CreateMetadataJsonStep`, Anton's Excel-Import dump, anything new),
+read [`docs/producers.md`](docs/producers.md). It maps the
+producer-side flat fields (e.g. agate's `parent_uuid`,
+`creation_actors`, `scope_and_content`) to the v0.1 wrapper shape.
 
 ## Development
 

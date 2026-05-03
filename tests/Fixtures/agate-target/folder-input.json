@@ -1,0 +1,58 @@
+{
+  "version": "0.1",
+  "generator": "agate@0.1.0-pending",
+  "entries": [
+    {
+      "type": "collection",
+      "uuid": "f2fd89ba-e03b-46b0-b33b-a7a149216347",
+      "level_of_description": "class",
+      "title": { "de": "Content" },
+      "object_count": 2
+    },
+    {
+      "type": "collection",
+      "uuid": "5c700b63-6c52-49ed-9281-821325d097b8",
+      "parent": { "uuid": "f2fd89ba-e03b-46b0-b33b-a7a149216347" },
+      "level_of_description": "file",
+      "title": { "de": "Dossier B" },
+      "object_count": 1
+    },
+    {
+      "type": "record",
+      "uuid": "278ac0d1-ce5c-433f-b75c-315a5f315611",
+      "parent": { "uuid": "5c700b63-6c52-49ed-9281-821325d097b8" },
+      "level_of_description": "item",
+      "title": { "de": "Readme" },
+      "object_count": 1,
+      "object_type": "Digitaler Text",
+      "events": [
+        {
+          "type": "creation",
+          "date_start": "2026-04-29",
+          "date_start_ca": false,
+          "date_end": "2026-04-29",
+          "date_end_ca": false,
+          "details": "Datierung aufgrund des File:FileModifyDate (letzte Dateiänderung, ExifTool)"
+        }
+      ],
+      "files": [
+        {
+          "uuid": "bacd79c7-2e27-46c0-8cdb-c8ee05bc4182",
+          "name": "readme.txt",
+          "file_path": "dossier-B/readme.txt",
+          "mime_type": "text/plain",
+          "md5sum": "be882bb56362037fb2cc87bc1ab84b21",
+          "size_bytes": 22,
+          "nara_risk": "low"
+        }
+      ]
+    },
+    {
+      "type": "collection",
+      "uuid": "9b928d1e-e957-4a50-abfa-e1cd1aa085e4",
+      "parent": { "uuid": "f2fd89ba-e03b-46b0-b33b-a7a149216347" },
+      "level_of_description": "file",
+      "title": { "de": "Dossier A" }
+    }
+  ]
+}

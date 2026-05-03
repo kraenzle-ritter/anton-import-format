@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace KraenzleRitter\AntonImportFormat\Tests;
 
+use KraenzleRitter\AntonImportFormat\ValidationError;
+use KraenzleRitter\AntonImportFormat\ValidationResult;
 use KraenzleRitter\AntonImportFormat\Validator;
 use PHPUnit\Framework\TestCase;
 
@@ -19,40 +21,67 @@ final class ValidatorTest extends TestCase
     public function test_accepts_string_input(): void
     {
         $json = '{"version":"0.1","tenant":"x","generator":"y","entries":[]}';
-        $this->assertSame([], $this->validator->validate($json));
+        $result = $this->validator->validate($json);
+        $this->assertTrue($result->valid);
+        $this->assertSame([], $result->errors);
     }
 
     public function test_accepts_array_input(): void
     {
         $arr = ['version' => '0.1', 'tenant' => 'x', 'generator' => 'y', 'entries' => []];
-        $this->assertSame([], $this->validator->validate($arr));
+        $this->assertTrue($this->validator->validate($arr)->valid);
     }
 
     public function test_accepts_stdclass_input(): void
     {
         $obj = json_decode('{"version":"0.1","tenant":"x","generator":"y","entries":[]}', false);
         $this->assertNotNull($obj);
-        $this->assertSame([], $this->validator->validate($obj));
+        $this->assertTrue($this->validator->validate($obj)->valid);
     }
 
-    public function test_returns_structured_errors_on_failure(): void
+    public function test_returns_invalid_result_with_structured_errors_on_failure(): void
     {
-        $errors = $this->validator->validate(['tenant' => 'x']);
-        $this->assertNotEmpty($errors);
-        foreach ($errors as $error) {
-            $this->assertArrayHasKey('path', $error);
-            $this->assertArrayHasKey('keyword', $error);
-            $this->assertArrayHasKey('message', $error);
-            $this->assertIsString($error['path']);
-            $this->assertIsString($error['keyword']);
-            $this->assertIsString($error['message']);
+        $result = $this->validator->validate(['tenant' => 'x']);
+
+        $this->assertInstanceOf(ValidationResult::class, $result);
+        $this->assertFalse($result->valid);
+        $this->assertNotEmpty($result->errors);
+        foreach ($result->errors as $error) {
+            $this->assertInstanceOf(ValidationError::class, $error);
+            $this->assertNotSame('', $error->path);
+            $this->assertNotSame('', $error->keyword);
+            $this->assertNotSame('', $error->message);
         }
+    }
+
+    public function test_validation_error_serialises_to_array(): void
+    {
+        $result = $this->validator->validate(['tenant' => 'x']);
+        $first = $result->errors[0];
+
+        $arr = $first->toArray();
+        $this->assertArrayHasKey('path', $arr);
+        $this->assertArrayHasKey('keyword', $arr);
+        $this->assertArrayHasKey('message', $arr);
+    }
+
+    public function test_validation_result_serialises_to_array(): void
+    {
+        $result = $this->validator->validate(['tenant' => 'x']);
+        $arr = $result->toArray();
+
+        $this->assertArrayHasKey('valid', $arr);
+        $this->assertArrayHasKey('errors', $arr);
+        $this->assertFalse($arr['valid']);
+        $this->assertNotEmpty($arr['errors']);
+        $this->assertArrayHasKey('path', $arr['errors'][0]);
     }
 
     public function test_does_not_throw_on_validation_failure(): void
     {
-        $errors = $this->validator->validate(['version' => 'invalid-version-pattern']);
-        $this->assertNotEmpty($errors);
+        $result = $this->validator->validate(['version' => 'invalid-version-pattern']);
+        $this->assertFalse($result->valid);
+        $this->assertNotEmpty($result->errors);
     }
 
     public function test_throws_jsonexception_on_malformed_string(): void
@@ -63,28 +92,30 @@ final class ValidatorTest extends TestCase
 
     public function test_version_warning_when_declared_does_not_match_loaded(): void
     {
-        $errors = $this->validator->validateWithVersionWarning([
+        $result = $this->validator->validateWithVersionWarning([
             'version' => '0.99',
             'tenant' => 'x',
             'generator' => 'y',
             'entries' => [],
         ]);
 
-        $this->assertCount(1, $errors);
-        $this->assertSame('/version', $errors[0]['path']);
-        $this->assertSame('schema_version_mismatch', $errors[0]['keyword']);
-        $this->assertStringContainsString('0.99', $errors[0]['message']);
+        $this->assertTrue($result->valid, 'Structural validation should pass; only the version warning is appended.');
+        $this->assertCount(1, $result->errors);
+        $this->assertSame('/version', $result->errors[0]->path);
+        $this->assertSame('schema_version_mismatch', $result->errors[0]->keyword);
+        $this->assertStringContainsString('0.99', $result->errors[0]->message);
     }
 
     public function test_no_version_warning_when_versions_match(): void
     {
-        $errors = $this->validator->validateWithVersionWarning([
+        $result = $this->validator->validateWithVersionWarning([
             'version' => '0.1',
             'tenant' => 'x',
             'generator' => 'y',
             'entries' => [],
         ]);
 
-        $this->assertSame([], $errors);
+        $this->assertTrue($result->valid);
+        $this->assertSame([], $result->errors);
     }
 }

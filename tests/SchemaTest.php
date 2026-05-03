@@ -37,12 +37,16 @@ final class SchemaTest extends TestCase
      */
     public function test_valid_fixture_passes(string $fixture): void
     {
-        $errors = $this->validator->validate($this->loadFixture('valid/' . $fixture));
-        $this->assertSame(
-            [],
-            $errors,
-            sprintf('Fixture %s expected valid, got errors: %s', $fixture, json_encode($errors))
+        $result = $this->validator->validate($this->loadFixture('valid/' . $fixture));
+        $this->assertTrue(
+            $result->valid,
+            sprintf(
+                'Fixture %s expected valid, got errors: %s',
+                $fixture,
+                json_encode($result->toArray()['errors'])
+            )
         );
+        $this->assertSame([], $result->errors);
     }
 
     /**
@@ -52,6 +56,7 @@ final class SchemaTest extends TestCase
     {
         yield 'minimal' => ['minimal.json'];
         yield 'full' => ['full.json'];
+        yield 'agate-target/folder-input' => ['../agate-target/folder-input.json'];
     }
 
     /**
@@ -59,15 +64,16 @@ final class SchemaTest extends TestCase
      */
     public function test_broken_fixture_fails_with_at_least_one_error(string $fixture): void
     {
-        $errors = $this->validator->validate($this->loadFixture('broken/' . $fixture));
-        $this->assertNotEmpty(
-            $errors,
-            sprintf('Broken fixture %s should produce at least one error', $fixture)
+        $result = $this->validator->validate($this->loadFixture('broken/' . $fixture));
+        $this->assertFalse(
+            $result->valid,
+            sprintf('Broken fixture %s should produce a failed result', $fixture)
         );
-        foreach ($errors as $error) {
-            $this->assertArrayHasKey('path', $error);
-            $this->assertArrayHasKey('keyword', $error);
-            $this->assertArrayHasKey('message', $error);
+        $this->assertNotEmpty($result->errors);
+        foreach ($result->errors as $error) {
+            $this->assertNotSame('', $error->path);
+            $this->assertNotSame('', $error->keyword);
+            $this->assertNotSame('', $error->message);
         }
     }
 
