@@ -1,0 +1,12 @@
+{
+  "version": "0.1",
+  "tenant": "demo",
+  "generator": "fixture@minimal",
+  "entries": [
+    {
+      "uuid": "0193e8f7-1234-7890-abcd-ef0123456789",
+      "type": "collection",
+      "title": { "de": "Demo-Sammlung" }
+    }
+  ]
+}

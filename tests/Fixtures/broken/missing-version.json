@@ -1,0 +1,5 @@
+{
+  "tenant": "demo",
+  "generator": "fixture@broken",
+  "entries": []
+}

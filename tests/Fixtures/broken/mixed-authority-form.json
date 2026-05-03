@@ -1,0 +1,21 @@
+{
+  "version": "0.1",
+  "tenant": "demo",
+  "generator": "fixture@broken",
+  "entries": [
+    {
+      "uuid": "55555555-5555-7555-8555-555555555555",
+      "type": "record",
+      "title": { "de": "Test" },
+      "events": [
+        {
+          "type": "creation",
+          "actor": {
+            "id": 42,
+            "label": { "de": "Mixing both forms" }
+          }
+        }
+      ]
+    }
+  ]
+}

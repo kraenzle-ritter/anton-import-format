@@ -1,0 +1,18 @@
+{
+  "version": "0.1",
+  "tenant": "demo",
+  "generator": "fixture@broken",
+  "entries": [
+    {
+      "uuid": "88888888-8888-7888-8888-888888888888",
+      "type": "record",
+      "title": { "de": "Datei ohne md5sum" },
+      "files": [
+        {
+          "name": "test.pdf",
+          "mime_type": "application/pdf"
+        }
+      ]
+    }
+  ]
+}

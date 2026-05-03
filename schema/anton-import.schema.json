@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kraenzle-ritter.ch/schemas/anton-import/0.1/schema.json",
+  "title": "Anton Import Format",
+  "description": "Canonical JSON shape for Anton's metadata.json import contract. v0.1 — may break across 0.x.",
+
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["version", "tenant", "generator", "entries"],
+
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema major.minor that this document targets (e.g. \"0.1\").",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "tenant": {
+      "type": "string",
+      "description": "Anton tenant slug for which the import is intended (e.g. \"kba\", \"gosteli\").",
+      "minLength": 1
+    },
+    "generator": {
+      "type": "string",
+      "description": "Identifier of the producing tool, including version (e.g. \"agate@0.1.0\", \"anton-excel-import\").",
+      "minLength": 1
+    },
+    "defaults": {
+      "$ref": "#/$defs/Defaults",
+      "description": "Pipeline-wide defaults inherited by authority specs that don't set match_by/on_not_found."
+    },
+    "entries": {
+      "type": "array",
+      "description": "Top-level Anton-import records (collection / record entries forming the hierarchy).",
+      "items": { "$ref": "#/$defs/Entry" }
+    }
+  },
+
+  "$defs": {
+
+    "Defaults": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "match_by":     { "$ref": "#/$defs/MatchBy" },
+        "on_not_found": { "$ref": "#/$defs/OnNotFound" }
+      }
+    },
+
+    "MatchBy": {
+      "type": "string",
+      "description": "Strategy for matching an inline authority spec against an existing DB authority record.",
+      "enum": ["label", "label.de", "label.fr", "label.en", "label.it", "alternative_names"]
+    },
+
+    "OnNotFound": {
+      "type": "string",
+      "description": "Policy applied when the inline authority spec does not match any existing DB record.",
+      "enum": ["create", "error", "skip"]
+    },
+
+    "Entry": {
+      "oneOf": [
+        { "$ref": "#/$defs/CollectionEntry" },
+        { "$ref": "#/$defs/RecordEntry" }
+      ]
+    },
+
+    "CollectionEntry": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["uuid", "type", "title"],
+      "properties": {
+        "uuid":                 { "type": "string", "format": "uuid" },
+        "type":                 { "const": "collection" },
+        "level_of_description": { "$ref": "#/$defs/LevelOfDescription" },
+        "identifier":           { "type": "string" },
+        "identifier_old":       { "type": "string" },
+        "title":                { "$ref": "#/$defs/MultilingualString" },
+        "parent":               { "$ref": "#/$defs/ObjectReference" },
+        "extent_cm":            { "type": "string" },
+        "object_count":         { "type": ["string", "integer", "null"] },
+        "vacat":                { "type": ["boolean", "integer"] },
+        "private":              { "type": ["boolean", "integer"] },
+        "release_year":         { "type": ["integer", "null"] },
+        "events":               { "type": "array", "items": { "$ref": "#/$defs/Event" } },
+        "notes":                { "type": "array", "items": { "$ref": "#/$defs/Note" } },
+        "languages":            { "type": "array", "items": { "$ref": "#/$defs/LanguageCode" } },
+        "keywords":             { "type": "array", "items": { "$ref": "#/$defs/AuthorityReference" } },
+        "places":               { "type": "array", "items": { "$ref": "#/$defs/AuthorityReference" } }
+      }
+    },
+
+    "RecordEntry": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["uuid", "type", "title"],
+      "properties": {
+        "uuid":                 { "type": "string", "format": "uuid" },
+        "type":                 { "const": "record" },
+        "level_of_description": { "$ref": "#/$defs/LevelOfDescription" },
+        "identifier":           { "type": "string" },
+        "identifier_old":       { "type": "string" },
+        "title":                { "$ref": "#/$defs/MultilingualString" },
+        "parent":               { "$ref": "#/$defs/ObjectReference" },
+        "extent_cm":            { "type": "string" },
+        "object_count":         { "type": ["string", "integer", "null"] },
+        "vacat":                { "type": ["boolean", "integer"] },
+        "private":              { "type": ["boolean", "integer"] },
+        "release_year":         { "type": ["integer", "null"] },
+        "events":               { "type": "array", "items": { "$ref": "#/$defs/Event" } },
+        "notes":                { "type": "array", "items": { "$ref": "#/$defs/Note" } },
+        "languages":            { "type": "array", "items": { "$ref": "#/$defs/LanguageCode" } },
+        "keywords":             { "type": "array", "items": { "$ref": "#/$defs/AuthorityReference" } },
+        "places":               { "type": "array", "items": { "$ref": "#/$defs/AuthorityReference" } },
+        "files":                { "type": "array", "items": { "$ref": "#/$defs/File" } }
+      }
+    },
+
+    "LevelOfDescription": {
+      "type": "string",
+      "description": "ISAD(G) level of description.",
+      "enum": ["collection", "recordgroup", "fonds", "series", "class", "file", "item"]
+    },
+
+    "ObjectReference": {
+      "type": "object",
+      "description": "Reference to an existing AntonObject (parent, etc.). UUID is primary; identifier and id only resolve if the target already exists in DB. Resolution order: uuid > identifier > id.",
+      "additionalProperties": false,
+      "properties": {
+        "uuid":       { "type": "string", "format": "uuid" },
+        "identifier": { "type": "string", "minLength": 1 },
+        "id":         { "type": "integer", "minimum": 1 }
+      },
+      "anyOf": [
+        { "required": ["uuid"] },
+        { "required": ["identifier"] },
+        { "required": ["id"] }
+      ]
+    },
+
+    "MultilingualString": {
+      "type": "object",
+      "description": "Multilingual content keyed by ISO-639-1 two-letter language codes (de, fr, en, it, ...). Values are the localised strings.",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z]{2}$": { "type": "string" }
+      }
+    },
+
+    "LanguageCode": {
+      "type": "string",
+      "description": "ISO-639-2 three-letter language code as stored in Anton's languages.name column (ger, fre, eng, lat, ...).",
+      "pattern": "^[a-z]{3}$"
+    },
+
+    "AuthorityReference": {
+      "description": "Reference to an Actor, Place, or Keyword. Either id-form (existing DB record by id) or inline-form (match-or-create). The two forms MUST NOT be mixed.",
+      "oneOf": [
+        { "$ref": "#/$defs/AuthorityIdReference" },
+        { "$ref": "#/$defs/AuthorityInlineSpec" }
+      ]
+    },
+
+    "AuthorityIdReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 1 }
+      }
+    },
+
+    "AuthorityInlineSpec": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["label"],
+      "not": { "required": ["id"] },
+      "properties": {
+        "label":           { "$ref": "#/$defs/MultilingualString" },
+        "type":            { "type": "string" },
+        "subtype":         { "type": "string" },
+        "match_by":        { "$ref": "#/$defs/MatchBy" },
+        "on_not_found":    { "$ref": "#/$defs/OnNotFound" },
+        "alternative_names": { "type": "array", "items": { "type": "string" } },
+        "date_start":      { "type": "string" },
+        "date_end":        { "type": "string" },
+        "city":            { "type": "string" },
+        "state":           { "type": "string" },
+        "country_code":    { "type": "string" },
+        "address":         { "type": "string" }
+      }
+    },
+
+    "Event": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Eventtype name (matches Anton's Eventtype enum: creation, acquisition, reproduction, digitisation, reception, performance, provenance, preservation, engravation, writing, coloring, edition, production, text_author, ingest, other).",
+          "enum": [
+            "creation", "acquisition", "reproduction", "digitisation",
+            "reception", "performance", "provenance", "preservation",
+            "engravation", "writing", "coloring", "edition", "production",
+            "text_author", "ingest", "other"
+          ]
+        },
+        "actor":      { "$ref": "#/$defs/AuthorityReference" },
+        "place":      { "$ref": "#/$defs/AuthorityReference" },
+        "details":    { "type": "string" },
+        "date_start": { "type": "string" },
+        "date_end":   { "type": "string" },
+        "date_start_ca": { "type": ["boolean", "integer"] },
+        "date_end_ca":   { "type": ["boolean", "integer"] }
+      }
+    },
+
+    "Note": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["type", "locale", "text"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Notetype name (e.g. scopecontent, archivists_notes, general_note, internal_note, condition_of_access, provenance, ...).",
+          "minLength": 1
+        },
+        "locale": {
+          "type": "string",
+          "description": "ISO-639-1 two-letter locale code for the note text.",
+          "pattern": "^[a-z]{2}$"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+
+    "File": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["name", "mime_type", "md5sum"],
+      "properties": {
+        "uuid":       { "type": "string", "format": "uuid" },
+        "name":       { "type": "string", "minLength": 1 },
+        "file_path":  { "type": "string" },
+        "mime_type":  { "type": "string", "minLength": 1 },
+        "md5sum":     { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+        "size_bytes": { "type": "integer", "minimum": 0 },
+        "pronom_id":  { "type": "string" },
+        "nara_risk":  { "type": "string", "enum": ["low", "moderate", "high", "unknown"] },
+        "exiftool":   { "type": "object" }
+      }
+    }
+  }
+}

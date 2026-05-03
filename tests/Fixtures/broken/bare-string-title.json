@@ -1,0 +1,12 @@
+{
+  "version": "0.1",
+  "tenant": "demo",
+  "generator": "fixture@broken",
+  "entries": [
+    {
+      "uuid": "44444444-4444-7444-8444-444444444444",
+      "type": "collection",
+      "title": "Bare string instead of multilingual object"
+    }
+  ]
+}

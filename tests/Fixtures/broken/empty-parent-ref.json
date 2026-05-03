@@ -1,0 +1,13 @@
+{
+  "version": "0.1",
+  "tenant": "demo",
+  "generator": "fixture@broken",
+  "entries": [
+    {
+      "uuid": "99999999-9999-7999-8999-999999999999",
+      "type": "record",
+      "title": { "de": "Leerer parent-ref" },
+      "parent": {}
+    }
+  ]
+}

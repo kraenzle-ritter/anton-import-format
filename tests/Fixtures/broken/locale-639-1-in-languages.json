@@ -1,0 +1,13 @@
+{
+  "version": "0.1",
+  "tenant": "demo",
+  "generator": "fixture@broken",
+  "entries": [
+    {
+      "uuid": "77777777-7777-7777-8777-777777777777",
+      "type": "collection",
+      "title": { "de": "Zwei-Buchstaben-Code im languages-Array statt im title" },
+      "languages": ["de"]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "version": "0.1",
+  "tenant": "demo",
+  "generator": "fixture@broken",
+  "entries": [
+    {
+      "uuid": "aaaaaaaa-aaaa-7aaa-8aaa-aaaaaaaaaaaa",
+      "type": "record",
+      "title": { "de": "Test" },
+      "events": [
+        {
+          "type": "creation",
+          "actor": {
+            "label": { "de": "Test" },
+            "on_not_found": "magic"
+          }
+        }
+      ]
+    }
+  ]
+}

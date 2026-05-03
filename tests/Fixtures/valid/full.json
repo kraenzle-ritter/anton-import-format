@@ -1,0 +1,128 @@
+{
+  "version": "0.1",
+  "tenant": "kba",
+  "generator": "agate@0.1.0",
+  "defaults": {
+    "match_by": "label",
+    "on_not_found": "create"
+  },
+  "entries": [
+    {
+      "uuid": "11111111-1111-7111-8111-111111111111",
+      "type": "collection",
+      "level_of_description": "fonds",
+      "identifier": "KBA 1",
+      "title": {
+        "de": "Kunst & Bauen Archiv",
+        "fr": "Archives Art et Construction",
+        "en": "Art & Construction Archive"
+      },
+      "extent_cm": "120",
+      "private": false,
+      "vacat": false,
+      "languages": ["ger"],
+      "events": [
+        {
+          "type": "provenance",
+          "actor": {
+            "label": { "de": "Stiftung Beispiel" },
+            "type": "corporate_body",
+            "on_not_found": "create"
+          },
+          "date_start": "1980-00-00",
+          "date_end": "0000-00-00"
+        }
+      ],
+      "notes": [
+        {
+          "type": "scopecontent",
+          "locale": "de",
+          "text": "Die Sammlung enthält Korrespondenz, Bilddokumentation und Tonaufnahmen."
+        }
+      ],
+      "keywords": [
+        { "id": 17 },
+        {
+          "label": { "de": "Konferenz", "fr": "Conférence", "en": "Conference" },
+          "type": "object"
+        }
+      ],
+      "places": [
+        { "id": 8 }
+      ]
+    },
+    {
+      "uuid": "22222222-2222-7222-8222-222222222222",
+      "type": "record",
+      "level_of_description": "item",
+      "identifier": "KBA 1.1.1",
+      "parent": { "uuid": "11111111-1111-7111-8111-111111111111" },
+      "title": {
+        "de": "Brief vom 14.3.1923",
+        "en": "Letter dated 14 March 1923"
+      },
+      "release_year": 1923,
+      "languages": ["ger"],
+      "events": [
+        {
+          "type": "creation",
+          "actor": {
+            "label": { "de": "Anna Müller" },
+            "type": "person",
+            "match_by": "label",
+            "on_not_found": "create",
+            "date_start": "1890-04-12",
+            "date_end": "1962-11-03"
+          },
+          "place": {
+            "label": { "de": "Berlin" },
+            "city": "Berlin",
+            "country_code": "DE"
+          },
+          "date_start": "1923-03-14",
+          "date_end": "1923-03-14"
+        },
+        {
+          "type": "reception",
+          "actor": { "id": 42 },
+          "details": "Empfang durch Heinrich Schmidt",
+          "date_start": "1923-04-08",
+          "date_end": "1923-04-08"
+        }
+      ],
+      "notes": [
+        {
+          "type": "archivists_notes",
+          "locale": "de",
+          "text": "Originalbrief leicht beschädigt; gelagert in Säurefreier Mappe Nr. 14."
+        },
+        {
+          "type": "general_note",
+          "locale": "en",
+          "text": "Original letter slightly damaged; stored in acid-free folder no. 14."
+        }
+      ],
+      "keywords": [
+        { "label": { "de": "Brief" }, "type": "object" }
+      ],
+      "places": [
+        {
+          "label": { "de": "Berlin" },
+          "match_by": "label.de"
+        }
+      ],
+      "files": [
+        {
+          "uuid": "33333333-3333-7333-8333-333333333333",
+          "name": "brief-mueller-1923-03-14.pdf",
+          "file_path": "files/brief-mueller-1923-03-14.pdf",
+          "mime_type": "application/pdf",
+          "md5sum": "5d41402abc4b2a76b9719d911017c592",
+          "size_bytes": 20697,
+          "pronom_id": "fmt/14",
+          "nara_risk": "low"
+        }
+      ]
+    }
+  ]
+}
