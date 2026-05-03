@@ -1,18 +1,20 @@
 # Changelog
 
-## Unreleased — pre-tag refinements (2026-05-03 evening)
+## v0.1.0 — Initial release (2026-05-03)
+
+### Pre-tag refinements (2026-05-03 evening)
 
 After the initial main push, two cross-repo issues from agate's side
 prompted the following adjustments before the v0.1.0 tag:
 
-- **`Validator::validate()` now returns `ValidationResult`**, a
+- **`Validator::validate()` returns `ValidationResult`**, a
   `final readonly` value object with a `valid: bool` flag and an
   `errors: list<ValidationError>` array (instead of a flat
   `array<int, array{...}>`). Aligns with agate's existing wiring and
   the sibling-package convention (`puidentify`, `nara-risk`).
   Self-documenting `if (! $result->valid)` instead of
   `count($errors) === 0`.
-- **`tenant` is now optional** at the top level (and nullable). Producer
+- **`tenant` is optional** at the top level (and nullable). Producer
   pipelines that don't know the target Anton tenant (notably agate)
   may omit it; Anton's importer overrides with `setting('slug')`
   regardless.
@@ -24,7 +26,7 @@ prompted the following adjustments before the v0.1.0 tag:
   after its restructure. Companion to the read-only
   `legacy-agate-output/` snapshots.
 
-## v0.1.0 — Initial release (2026-05-03)
+### Initial release contents
 
 First public release of the canonical Anton-import format.
 
