@@ -109,7 +109,7 @@ final class ValidatorTest extends TestCase
     public function test_no_version_warning_when_versions_match(): void
     {
         $result = $this->validator->validateWithVersionWarning([
-            'version' => '0.1',
+            'version' => '0.2',
             'tenant' => 'x',
             'generator' => 'y',
             'entries' => [],

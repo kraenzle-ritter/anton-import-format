@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kraenzle-ritter.ch/schemas/anton-import/0.1/schema.json",
+  "$id": "https://kraenzle-ritter.ch/schemas/anton-import/0.2/schema.json",
   "title": "Anton Import Format",
-  "description": "Canonical JSON shape for Anton's metadata.json import contract. v0.1 — may break across 0.x.",
+  "description": "Canonical JSON shape for Anton's metadata.json import contract. v0.2 — adds optional `nara_category` enum on RecordEntry and File so producers emit raw NARA categories and the consumer (Anton) owns the mapping to its tenant `object_types` taxonomy. Backward-compatible: pre-v0.2 documents without the field continue to validate.",
 
   "type": "object",
   "additionalProperties": true,
@@ -112,8 +112,32 @@
         "languages":            { "type": "array", "items": { "$ref": "#/$defs/LanguageCode" } },
         "keywords":             { "type": "array", "items": { "$ref": "#/$defs/AuthorityReference" } },
         "places":               { "type": "array", "items": { "$ref": "#/$defs/AuthorityReference" } },
-        "files":                { "type": "array", "items": { "$ref": "#/$defs/File" } }
+        "files":                { "type": "array", "items": { "$ref": "#/$defs/File" } },
+        "nara_category":        { "$ref": "#/$defs/NaraCategory" }
       }
+    },
+
+    "NaraCategory": {
+      "type": "string",
+      "description": "NARA-standard file format category. Producers emit the raw NARA category; the consumer (Anton) maps it to its tenant `object_types` taxonomy. The 16 categories cover NARA's File Format Risk Assessment vocabulary as of 2024.",
+      "enum": [
+        "Audio",
+        "Video",
+        "Cinema",
+        "StillImage",
+        "Geospatial",
+        "NavCharts",
+        "DesignVector",
+        "Textual",
+        "Spreadsheets",
+        "Presentation",
+        "Code",
+        "Email",
+        "Web",
+        "Databases",
+        "StructuredData",
+        "Calendars"
+      ]
     },
 
     "LevelOfDescription": {
@@ -249,10 +273,11 @@
         "file_path":  { "type": "string" },
         "mime_type":  { "type": "string", "minLength": 1 },
         "md5sum":     { "type": "string", "pattern": "^[a-f0-9]{32}$" },
-        "size_bytes": { "type": "integer", "minimum": 0 },
-        "pronom_id":  { "type": "string" },
-        "nara_risk":  { "type": "string", "enum": ["low", "moderate", "high", "unknown"] },
-        "exiftool":   { "type": "object" }
+        "size_bytes":     { "type": "integer", "minimum": 0 },
+        "pronom_id":      { "type": "string" },
+        "nara_risk":      { "type": "string", "enum": ["low", "moderate", "high", "unknown"] },
+        "nara_category":  { "$ref": "#/$defs/NaraCategory" },
+        "exiftool":       { "type": "object" }
       }
     }
   }

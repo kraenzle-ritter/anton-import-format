@@ -1,0 +1,30 @@
+{
+  "version": "0.2",
+  "tenant": "demo",
+  "generator": "fixture@nara",
+  "entries": [
+    {
+      "uuid": "0193e8f7-1234-7890-abcd-ef0123456789",
+      "type": "record",
+      "level_of_description": "file",
+      "title": { "de": "Briefwechsel 1995" },
+      "nara_category": "Textual",
+      "files": [
+        {
+          "name": "letter-001.pdf",
+          "mime_type": "application/pdf",
+          "md5sum": "0123456789abcdef0123456789abcdef",
+          "nara_risk": "low",
+          "nara_category": "Textual"
+        },
+        {
+          "name": "photo-001.jpg",
+          "mime_type": "image/jpeg",
+          "md5sum": "fedcba9876543210fedcba9876543210",
+          "nara_risk": "low",
+          "nara_category": "StillImage"
+        }
+      ]
+    }
+  ]
+}

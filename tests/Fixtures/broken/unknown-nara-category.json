@@ -1,0 +1,13 @@
+{
+  "version": "0.2",
+  "tenant": "demo",
+  "generator": "fixture@broken",
+  "entries": [
+    {
+      "uuid": "0193e8f7-1234-7890-abcd-ef0123456789",
+      "type": "record",
+      "title": { "de": "X" },
+      "nara_category": "Banana"
+    }
+  ]
+}

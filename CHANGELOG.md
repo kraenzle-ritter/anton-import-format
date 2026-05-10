@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.2.0 — NARA category enum (2026-05-10)
+
+Additive minor: optional `nara_category` field on `RecordEntry` and `File`.
+Pre-v0.2 documents continue to validate (no required field added).
+
+### Added
+
+- **`$defs/NaraCategory`** — string enum covering NARA's 16 file-format categories: Audio, Video, Cinema, StillImage, Geospatial, NavCharts, DesignVector, Textual, Spreadsheets, Presentation, Code, Email, Web, Databases, StructuredData, Calendars.
+- **`RecordEntry.nara_category`** — optional, references `NaraCategory`. Used by the consumer (Anton) to map to its tenant `object_types` taxonomy. Producers (notably agate) emit the raw NARA category and stop carrying Anton-internal labels.
+- **`File.nara_category`** — same enum, optional, alongside the existing `nara_risk`. Lets per-file categorization survive into Anton's media records.
+- **`tests/Fixtures/valid/with-nara-category.json`** — schema-valid example with `nara_category` populated on a record entry and two file rows.
+- **`tests/Fixtures/broken/unknown-nara-category.json`** — confirms an off-list value (`Banana`) is rejected by the enum.
+
+### Changed
+
+- **`$id` and `SchemaLoader::SCHEMA_ID`** bumped to `0.2`. Schema document `description` updated to reflect the additive change.
+- **`SchemaTest::test_schema_version_helper_returns_major_minor`** asserts `'0.2'`.
+- **`ValidatorTest::test_no_version_warning_when_versions_match`** now uses `version: '0.2'`.
+
+### Why
+
+Producer-side hardcoded mapping of NARA-category-to-Anton-vocabulary is a layer violation: the producer ends up knowing the consumer's per-tenant taxonomy. This release moves the contract: producers emit NARA-standard categories, Anton owns the resolution to its own (potentially per-tenant) `object_types`. See anton#199 for the full rationale and Anton-side OpenSpec at `openspec/changes/nara-object-type-mapping/` in the anton repo.
+
+### Compatibility
+
+- **Backward**: pre-v0.2 documents that don't emit `nara_category` validate unchanged. The schema's top-level `version` field is a pattern (`^[0-9]+\.[0-9]+$`), not a hard-coded string, so a v0.1 document still passes structural validation against v0.2.
+- **Forward**: a v0.2 document with `nara_category` will fail validation against the v0.1 schema (the field was undefined and `additionalProperties: true` was set on the entry — actually, additive fields don't reject in v0.1's permissive base — but the enum constraint is only enforced when v0.2 schema is loaded). Producers should target v0.2 once the consumer wiring lands.
+
 ## v0.1.0 — Initial release (2026-05-03)
 
 ### Pre-tag refinements (2026-05-03 evening)
