@@ -1,0 +1,235 @@
+{
+    "version": "0.2",
+    "generator": "anton-excel-import@v0.61.2",
+    "entries": [
+        {
+            "uuid": "455d946a-b276-431b-a499-e44440ed3548",
+            "type": "record",
+            "title": {
+                "de": "Vorprojekt: Managementplan für das Weltkulturerbe Stiftsbezirk St.Gallen"
+            },
+            "parent": {
+                "identifier": "KRA 6"
+            },
+            "level_of_description": "item",
+            "object_count": "1",
+            "object_type": "Digitales Dokument",
+            "events": [
+                {
+                    "type": "creation",
+                    "date_start": "2014-09-08",
+                    "date_end": "2014-09-08",
+                    "actor": {
+                        "label": {
+                            "de": "Kränzle, Andreas"
+                        },
+                        "match_by": "label",
+                        "on_not_found": "create"
+                    },
+                    "place": {
+                        "label": {
+                            "de": "Zürich"
+                        },
+                        "match_by": "label",
+                        "on_not_found": "create"
+                    }
+                }
+            ],
+            "notes": [
+                {
+                    "type": "extent_text",
+                    "locale": "de",
+                    "text": "19 Seiten"
+                }
+            ]
+        },
+        {
+            "uuid": "c33164b1-42a0-441e-8e8f-91fbb9380b67",
+            "type": "record",
+            "title": {
+                "de": "Aufgaben- und Massnahmenplanung. UNESCO-Weltkulturerbe Stiftsbezirk St. Gallen 2017-2020"
+            },
+            "parent": {
+                "identifier": "KRA 6"
+            },
+            "level_of_description": "item",
+            "object_count": "1",
+            "object_type": "Digitales Dokument",
+            "events": [
+                {
+                    "type": "creation",
+                    "date_start": "2016-11",
+                    "date_end": "2017",
+                    "date_start_ca": true,
+                    "date_end_ca": true,
+                    "details": "Letzte Version der Aufgaben- und Massnahmenplanung",
+                    "actor": {
+                        "label": {
+                            "de": "Dora, Cornel"
+                        },
+                        "match_by": "label",
+                        "on_not_found": "create"
+                    },
+                    "place": {
+                        "label": {
+                            "de": "St. Gallen"
+                        },
+                        "match_by": "label",
+                        "on_not_found": "create"
+                    }
+                }
+            ],
+            "notes": [
+                {
+                    "type": "extent_text",
+                    "locale": "de",
+                    "text": "30"
+                }
+            ]
+        },
+        {
+            "uuid": "1a4ab44e-de34-4337-b8c5-b29adfcfa4a7",
+            "type": "record",
+            "title": {
+                "de": "Managementplan. UNESCO-Weltkulturerbe Stiftsbezirk St.Gallen  2017–2020"
+            },
+            "parent": {
+                "identifier": "KRA 6"
+            },
+            "level_of_description": "item",
+            "object_count": "1",
+            "object_type": "Digitales Dokument",
+            "events": [
+                {
+                    "type": "creation",
+                    "date_start": "2016",
+                    "date_end": "2016",
+                    "actor": {
+                        "label": {
+                            "de": "Dora, Cornel"
+                        },
+                        "match_by": "label",
+                        "on_not_found": "create"
+                    },
+                    "place": {
+                        "label": {
+                            "de": "St. Gallen"
+                        },
+                        "match_by": "label",
+                        "on_not_found": "create"
+                    }
+                }
+            ],
+            "notes": [
+                {
+                    "type": "extent_text",
+                    "locale": "de",
+                    "text": "77 Seiten"
+                }
+            ]
+        },
+        {
+            "uuid": "d50a1a72-feec-4047-b1d2-f671b29a15db",
+            "type": "record",
+            "title": {
+                "de": "Kapitell im Lapidarium"
+            },
+            "parent": {
+                "identifier": "KRA 6"
+            },
+            "level_of_description": "item",
+            "object_count": "1",
+            "object_type": "Foto",
+            "events": [
+                {
+                    "type": "creation",
+                    "date_start": "2015-07-15",
+                    "date_end": "2015-07-15",
+                    "actor": {
+                        "label": {
+                            "de": "Rolf Rosenberg (1952-2012)"
+                        },
+                        "match_by": "label",
+                        "on_not_found": "create"
+                    },
+                    "place": {
+                        "label": {
+                            "de": "St. Gallen"
+                        },
+                        "match_by": "label",
+                        "on_not_found": "create"
+                    }
+                }
+            ]
+        },
+        {
+            "uuid": "68903a24-393d-4d36-8c84-386560f563a3",
+            "type": "record",
+            "title": {
+                "de": "Grabungszelt"
+            },
+            "parent": {
+                "identifier": "KRA 6"
+            },
+            "level_of_description": "item",
+            "object_count": "1",
+            "object_type": "Foto",
+            "events": [
+                {
+                    "type": "creation",
+                    "date_start": "2011-09-28",
+                    "date_end": "2011-09-28",
+                    "actor": {
+                        "label": {
+                            "de": "KA SG"
+                        },
+                        "match_by": "label",
+                        "on_not_found": "create"
+                    },
+                    "place": {
+                        "label": {
+                            "de": "St. Gallen"
+                        },
+                        "match_by": "label",
+                        "on_not_found": "create"
+                    }
+                }
+            ]
+        },
+        {
+            "uuid": "a202bba5-0610-4ddf-a3c7-2fac563a54eb",
+            "type": "record",
+            "title": {
+                "de": "Der Sarkophag wird unter grosser Anteilnahme gehoben."
+            },
+            "parent": {
+                "identifier": "KRA 6"
+            },
+            "level_of_description": "item",
+            "object_count": "1",
+            "object_type": "Foto",
+            "events": [
+                {
+                    "type": "creation",
+                    "date_start": "2011-09-28",
+                    "date_end": "2011-09-28",
+                    "actor": {
+                        "label": {
+                            "de": "KA SG"
+                        },
+                        "match_by": "label",
+                        "on_not_found": "create"
+                    },
+                    "place": {
+                        "label": {
+                            "de": "St. Gallen"
+                        },
+                        "match_by": "label",
+                        "on_not_found": "create"
+                    }
+                }
+            ]
+        }
+    ],
+    "tenant": "kr"
+}
