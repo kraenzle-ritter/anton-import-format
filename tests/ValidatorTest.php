@@ -141,7 +141,7 @@ final class ValidatorTest extends TestCase
                 ],
             ],
         ]);
-        $this->assertTrue($result->valid, json_encode($result->toArray()));
+        $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
     }
 
     public function test_note_with_tracks_is_valid(): void
@@ -169,7 +169,7 @@ final class ValidatorTest extends TestCase
                 ],
             ],
         ]);
-        $this->assertTrue($result->valid, json_encode($result->toArray()));
+        $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
     }
 
     public function test_note_with_malformed_track_item_fails(): void
