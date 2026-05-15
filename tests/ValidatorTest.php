@@ -118,4 +118,112 @@ final class ValidatorTest extends TestCase
         $this->assertTrue($result->valid);
         $this->assertSame([], $result->errors);
     }
+
+    /**
+     * Note.tracks — optional time-stamped track entries (movie_content /
+     * audio_content notes). Pre-tracks Notes remain valid; tracks-bearing
+     * Notes must validate too. Malformed track items fail.
+     */
+    public function test_note_without_tracks_is_valid(): void
+    {
+        $result = $this->validator->validate([
+            'version' => '0.2',
+            'tenant' => 'x',
+            'generator' => 'y',
+            'entries' => [
+                [
+                    'type' => 'record',
+                    'uuid' => '11111111-1111-1111-1111-111111111111',
+                    'title' => ['de' => 'Trackless record'],
+                    'notes' => [
+                        ['type' => 'general_note', 'locale' => 'de', 'text' => 'plain text only'],
+                    ],
+                ],
+            ],
+        ]);
+        $this->assertTrue($result->valid, json_encode($result->toArray()));
+    }
+
+    public function test_note_with_tracks_is_valid(): void
+    {
+        $result = $this->validator->validate([
+            'version' => '0.2',
+            'tenant' => 'x',
+            'generator' => 'y',
+            'entries' => [
+                [
+                    'type' => 'record',
+                    'uuid' => '11111111-1111-1111-1111-111111111111',
+                    'title' => ['de' => 'Filmclip'],
+                    'notes' => [
+                        [
+                            'type' => 'movie_content',
+                            'locale' => 'de',
+                            'text' => 'Vollständige Beschreibung',
+                            'tracks' => [
+                                ['timestamp' => '00:00:05', 'content' => 'Anfangsszene'],
+                                ['timestamp' => '00:01:23.500', 'content' => 'Schnitt mit Reflexion'],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        $this->assertTrue($result->valid, json_encode($result->toArray()));
+    }
+
+    public function test_note_with_malformed_track_item_fails(): void
+    {
+        $result = $this->validator->validate([
+            'version' => '0.2',
+            'tenant' => 'x',
+            'generator' => 'y',
+            'entries' => [
+                [
+                    'type' => 'record',
+                    'uuid' => '11111111-1111-1111-1111-111111111111',
+                    'title' => ['de' => 'Bad track'],
+                    'notes' => [
+                        [
+                            'type' => 'movie_content',
+                            'locale' => 'de',
+                            'text' => 'OK',
+                            'tracks' => [
+                                ['timestamp' => '00:00:05'], // missing required `content`
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        $this->assertFalse($result->valid);
+        $this->assertNotEmpty($result->errors);
+    }
+
+    public function test_note_with_empty_track_string_fails(): void
+    {
+        $result = $this->validator->validate([
+            'version' => '0.2',
+            'tenant' => 'x',
+            'generator' => 'y',
+            'entries' => [
+                [
+                    'type' => 'record',
+                    'uuid' => '11111111-1111-1111-1111-111111111111',
+                    'title' => ['de' => 'Empty track string'],
+                    'notes' => [
+                        [
+                            'type' => 'movie_content',
+                            'locale' => 'de',
+                            'text' => 'OK',
+                            'tracks' => [
+                                ['timestamp' => '', 'content' => 'irgendwas'],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        $this->assertFalse($result->valid);
+    }
 }

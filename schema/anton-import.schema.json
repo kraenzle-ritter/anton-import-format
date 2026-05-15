@@ -259,6 +259,27 @@
         "text": {
           "type": "string",
           "minLength": 1
+        },
+        "tracks": {
+          "type": "array",
+          "description": "Optional time-stamped track entries — used by movie_content / audio_content notes that carry a per-timestamp transcript or scene description. Producers MAY omit; consumers MUST treat as additive (pre-tracks Notes remain valid).",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": ["timestamp", "content"],
+            "properties": {
+              "timestamp": {
+                "type": "string",
+                "description": "Timecode within the parent media — typically HH:MM:SS or HH:MM:SS.mmm. Format is producer-defined; consumers SHOULD treat as opaque text.",
+                "minLength": 1
+              },
+              "content": {
+                "type": "string",
+                "description": "Free-text track content at this timestamp (transcript line, scene description, OCR snippet, …).",
+                "minLength": 1
+              }
+            }
+          }
         }
       }
     },

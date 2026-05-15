@@ -1,5 +1,42 @@
 # Changelog
 
+## v0.2.1 — Note.tracks for time-stamped media content (2026-05-15)
+
+Additive patch: optional `tracks` array on `Note`. Producers MAY omit;
+consumers MUST treat as additive. Pre-tracks Notes remain valid.
+
+### Added
+
+- **`Note.tracks`** — optional array of `{timestamp, content}` objects.
+  Timecode format is producer-defined (typical: `HH:MM:SS` or
+  `HH:MM:SS.mmm`); consumers SHOULD treat as opaque text. Both fields
+  are required and must be non-empty strings.
+- 4 new `ValidatorTest` cases pinning the contract:
+  `test_note_without_tracks_is_valid`,
+  `test_note_with_tracks_is_valid`,
+  `test_note_with_malformed_track_item_fails` (missing `content`),
+  `test_note_with_empty_track_string_fails` (empty `timestamp`).
+
+### Why
+
+Foundation for Anton's KI-Erschliessung change (`add-ai-assisted-description`):
+the existing `Notetype::movie_content` workflow stores per-scene
+descriptions one-row-per-timestamp. To round-trip movie descriptions
+through the import-format (so agate/AI-pipelines can emit them and
+Anton can re-import them), the time-stamped structure had to make it
+into the wire-level Note schema. Used initially by AI-generated
+movie/audio transcripts; mapping into Anton's existing per-row
+`movie_content` storage stays an importer detail.
+
+### Compatibility
+
+- **Backward**: pre-v0.2.1 documents without `tracks` validate
+  unchanged.
+- **Forward**: a v0.2.1 document with `tracks` validates against the
+  v0.2.0 schema too, because `additionalProperties: true` is set on
+  `Note` — the new field passes through as unknown. Consumers that
+  want to enforce the structure must load the v0.2.1 schema.
+
 ## v0.2.0 — NARA category enum (2026-05-10)
 
 Additive minor: optional `nara_category` field on `RecordEntry` and `File`.
