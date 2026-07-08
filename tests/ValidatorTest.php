@@ -109,7 +109,7 @@ final class ValidatorTest extends TestCase
     public function test_no_version_warning_when_versions_match(): void
     {
         $result = $this->validator->validateWithVersionWarning([
-            'version' => '0.3',
+            'version' => '0.4',
             'tenant' => 'x',
             'generator' => 'y',
             'entries' => [],
@@ -117,6 +117,38 @@ final class ValidatorTest extends TestCase
 
         $this->assertTrue($result->valid);
         $this->assertSame([], $result->errors);
+    }
+
+    /**
+     * v0.4 — inline authority specs may carry a portable `uuid` and
+     * `match_by: "uuid"` for stable-identity round-trips. Additive/optional.
+     */
+    public function test_inline_authority_with_uuid_is_valid(): void
+    {
+        $result = $this->validator->validate([
+            'version' => '0.4',
+            'tenant' => 'x',
+            'generator' => 'anton-native@1.0',
+            'entries' => [
+                [
+                    'type' => 'record',
+                    'uuid' => '44444444-4444-4444-4444-444444444444',
+                    'title' => ['de' => 'Mit Akteur-uuid'],
+                    'events' => [
+                        [
+                            'type' => 'creation',
+                            'actor' => [
+                                'uuid' => '55555555-5555-5555-5555-555555555555',
+                                'label' => ['de' => 'Meret Oppenheim'],
+                                'match_by' => 'uuid',
+                                'on_not_found' => 'create',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
     }
 
     /**

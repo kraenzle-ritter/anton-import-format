@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kraenzle-ritter.ch/schemas/anton-import/0.3/schema.json",
+  "$id": "https://kraenzle-ritter.ch/schemas/anton-import/0.4/schema.json",
   "title": "Anton Import Format",
-  "description": "Canonical JSON shape for Anton's metadata.json import contract. v0.3 — adds optional round-trip fidelity fields so an Anton-native export can be re-imported losslessly (anton#231, rdf-bundle-reimport): `formset_id`, `term_values` and `_raw` on entries, `notes` on inline authority specs (actor/place/keyword biographies), and media identity (`collection_name`, `file_name`, `generated_conversions`, `av_duration_seconds`) on File. All additive and optional — pre-v0.3 documents (and external producers such as agate) continue to validate unchanged. v0.2 added optional `nara_category`; v0.2.1 added optional `Note.tracks`.",
+  "description": "Canonical JSON shape for Anton's metadata.json import contract. v0.4 — adds an optional `uuid` (and `match_by: \"uuid\"`) to inline authority specs, so actors/places/keywords carry a portable stable identity and a round-trip re-anchors them by uuid instead of collapsing same-label records (anton#231, rdf-bundle-reimport). Additive and optional — pre-v0.4 documents (and external producers such as agate) continue to validate unchanged. v0.3 added optional round-trip fidelity fields (`formset_id`, `term_values`, `_raw`, authority-host `notes`, media identity); v0.2 added `nara_category`; v0.2.1 added `Note.tracks`.",
 
   "type": "object",
   "additionalProperties": true,
@@ -48,8 +48,8 @@
 
     "MatchBy": {
       "type": "string",
-      "description": "Strategy for matching an inline authority spec against an existing DB authority record.",
-      "enum": ["label", "label.de", "label.fr", "label.en", "label.it", "alternative_names"]
+      "description": "Strategy for matching an inline authority spec against an existing DB authority record. `uuid` (v0.4) matches on the portable stable id and creates the record with that uuid when absent — used by the Anton-native round-trip.",
+      "enum": ["uuid", "label", "label.de", "label.fr", "label.en", "label.it", "alternative_names"]
     },
 
     "OnNotFound": {
@@ -224,6 +224,7 @@
       "required": ["label"],
       "not": { "required": ["id"] },
       "properties": {
+        "uuid":            { "type": "string", "format": "uuid", "description": "Portable stable id of the authority (v0.4). When present the round-trip re-anchors by uuid; use with `match_by: \"uuid\"`." },
         "label":           { "$ref": "#/$defs/MultilingualString" },
         "type":            { "type": "string" },
         "subtype":         { "type": "string" },

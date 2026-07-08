@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.4.0 — portable authority identity (2026-07-08)
+
+Additive minor: an optional `uuid` (and `match_by: "uuid"`) on inline authority
+specs, so actors/places/keywords carry a **portable stable identity**. A
+round-trip re-anchors an authority by uuid instead of collapsing distinct
+same-label records (anton#231, rdf-bundle-reimport). Backward-compatible —
+pre-v0.4 documents and label-matching producers (agate) validate unchanged.
+
+### Added
+
+- **`uuid`** on `AuthorityInlineSpec` — the authority's portable stable id.
+- **`match_by: "uuid"`** in the `MatchBy` enum — match on the uuid and create
+  the record with it when absent.
+- `SchemaLoader::SCHEMA_ID` and the schema `$id` bumped to `0.4`.
+- `ValidatorTest::test_inline_authority_with_uuid_is_valid` + `SchemaTest`
+  version pin.
+
 ## v0.3.0 — round-trip fidelity fields (2026-07-08)
 
 Additive minor: optional fields so an **Anton-native export can be re-imported

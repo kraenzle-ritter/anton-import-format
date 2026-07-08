@@ -16,7 +16,7 @@ use RuntimeException;
  */
 final class SchemaLoader
 {
-    public const SCHEMA_ID = 'https://kraenzle-ritter.ch/schemas/anton-import/0.3/schema.json';
+    public const SCHEMA_ID = 'https://kraenzle-ritter.ch/schemas/anton-import/0.4/schema.json';
 
     private static ?OpisValidator $validator = null;
 
