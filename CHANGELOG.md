@@ -1,5 +1,36 @@
 # Changelog
 
+## v0.3.0 — round-trip fidelity fields (2026-07-08)
+
+Additive minor: optional fields so an **Anton-native export can be re-imported
+losslessly** (consumer: anton `rdf-bundle-reimport`, relates to anton#231).
+Backward-compatible — pre-v0.3 documents and external producers (agate) that
+omit the new fields continue to validate; `additionalProperties` was already
+open, this makes the fields first-class and shape-checked.
+
+### Added
+
+- **`formset_id`** on Collection/Record entries — which ObjectForm/Objectformtype
+  produced the record (governs which fields exist).
+- **`term_values[]`** on entries — termselect values (`object_term_values`), each
+  `{ antonfield, (term_id | taxonomy+name) }`. New `TermValue` `$def` requires a
+  term reference (`term_id` or `name`).
+- **`_raw`** on entries — opaque snapshot of exact pre-transform column values for
+  byte-fidelity restore; non-Anton producers SHOULD omit.
+- **`notes`** on `AuthorityInlineSpec` — notes on the authority record itself
+  (actor/place/keyword biographies), reusing the object `Note` shape.
+- **Media identity on `File`** — `collection_name`, `file_name`,
+  `generated_conversions`, `av_duration_seconds`.
+- `SchemaLoader::SCHEMA_ID` and the schema `$id` bumped to `0.3`.
+- 3 new `ValidatorTest` cases (fidelity fields valid, inline-authority notes
+  valid, term_value without a term reference fails) + `SchemaTest` version pin.
+
+### Why
+
+The A+ RDF bundle publishes a lossy CIDOC/RiC graph; a faithful re-import needs
+the Anton-native identity/structure the graph drops. Carrying it in the one
+canonical format (rather than a private sidecar) keeps a single source of truth.
+
 ## v0.2.1 — Note.tracks for time-stamped media content (2026-05-15)
 
 Additive patch: optional `tracks` array on `Note`. Producers MAY omit;

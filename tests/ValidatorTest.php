@@ -109,7 +109,7 @@ final class ValidatorTest extends TestCase
     public function test_no_version_warning_when_versions_match(): void
     {
         $result = $this->validator->validateWithVersionWarning([
-            'version' => '0.2',
+            'version' => '0.3',
             'tenant' => 'x',
             'generator' => 'y',
             'entries' => [],
@@ -117,6 +117,93 @@ final class ValidatorTest extends TestCase
 
         $this->assertTrue($result->valid);
         $this->assertSame([], $result->errors);
+    }
+
+    /**
+     * v0.3 round-trip fidelity fields — all additive and optional, so a
+     * document without them stays valid and a document with them validates.
+     */
+    public function test_entry_with_roundtrip_fidelity_fields_is_valid(): void
+    {
+        $result = $this->validator->validate([
+            'version' => '0.3',
+            'tenant' => 'x',
+            'generator' => 'anton-native@1.0',
+            'entries' => [
+                [
+                    'type' => 'record',
+                    'uuid' => '11111111-1111-1111-1111-111111111111',
+                    'title' => ['de' => 'Mit Fidelity'],
+                    'formset_id' => 12,
+                    'term_values' => [
+                        ['antonfield' => 'reproduction_conditions', 'term_id' => 7],
+                        ['antonfield' => 'reproduction_conditions', 'taxonomy' => 'repro', 'name' => 'cc-by'],
+                    ],
+                    '_raw' => ['location' => 'POINT(46.9480 7.4474)'],
+                    'files' => [
+                        [
+                            'name' => 'scan.jpg',
+                            'mime_type' => 'image/jpeg',
+                            'md5sum' => 'd41d8cd98f00b204e9800998ecf8427e',
+                            'collection_name' => 'image',
+                            'file_name' => 'scan.jpg',
+                            'generated_conversions' => ['web' => ['width' => 800, 'height' => 600], 'thumb' => true],
+                            'av_duration_seconds' => 0,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    public function test_inline_authority_notes_are_valid(): void
+    {
+        $result = $this->validator->validate([
+            'version' => '0.3',
+            'tenant' => 'x',
+            'generator' => 'anton-native@1.0',
+            'entries' => [
+                [
+                    'type' => 'record',
+                    'uuid' => '22222222-2222-2222-2222-222222222222',
+                    'title' => ['de' => 'Mit Akteur-Bio'],
+                    'events' => [
+                        [
+                            'type' => 'creation',
+                            'actor' => [
+                                'label' => ['de' => 'Meret Oppenheim'],
+                                'type' => 'person',
+                                'notes' => [
+                                    ['type' => 'bioghist', 'locale' => 'de', 'text' => 'Schweizer Künstlerin.'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    public function test_term_value_without_term_reference_fails(): void
+    {
+        $result = $this->validator->validate([
+            'version' => '0.3',
+            'tenant' => 'x',
+            'generator' => 'anton-native@1.0',
+            'entries' => [
+                [
+                    'type' => 'record',
+                    'uuid' => '33333333-3333-3333-3333-333333333333',
+                    'title' => ['de' => 'Kaputter Termwert'],
+                    'term_values' => [
+                        ['antonfield' => 'reproduction_conditions'],
+                    ],
+                ],
+            ],
+        ]);
+        $this->assertFalse($result->valid, 'term_value needs term_id or name');
     }
 
     /**

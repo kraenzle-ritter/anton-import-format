@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kraenzle-ritter.ch/schemas/anton-import/0.2/schema.json",
+  "$id": "https://kraenzle-ritter.ch/schemas/anton-import/0.3/schema.json",
   "title": "Anton Import Format",
-  "description": "Canonical JSON shape for Anton's metadata.json import contract. v0.2 — adds optional `nara_category` enum on RecordEntry and File so producers emit raw NARA categories and the consumer (Anton) owns the mapping to its tenant `object_types` taxonomy. Backward-compatible: pre-v0.2 documents without the field continue to validate.",
+  "description": "Canonical JSON shape for Anton's metadata.json import contract. v0.3 — adds optional round-trip fidelity fields so an Anton-native export can be re-imported losslessly (anton#231, rdf-bundle-reimport): `formset_id`, `term_values` and `_raw` on entries, `notes` on inline authority specs (actor/place/keyword biographies), and media identity (`collection_name`, `file_name`, `generated_conversions`, `av_duration_seconds`) on File. All additive and optional — pre-v0.3 documents (and external producers such as agate) continue to validate unchanged. v0.2 added optional `nara_category`; v0.2.1 added optional `Note.tracks`.",
 
   "type": "object",
   "additionalProperties": true,
@@ -86,7 +86,10 @@
         "notes":                { "type": "array", "items": { "$ref": "#/$defs/Note" } },
         "languages":            { "type": "array", "items": { "$ref": "#/$defs/LanguageCode" } },
         "keywords":             { "type": "array", "items": { "$ref": "#/$defs/AuthorityReference" } },
-        "places":               { "type": "array", "items": { "$ref": "#/$defs/AuthorityReference" } }
+        "places":               { "type": "array", "items": { "$ref": "#/$defs/AuthorityReference" } },
+        "formset_id":           { "type": ["integer", "string", "null"], "description": "Which ObjectForm/Objectformtype produced the record — governs which fields exist. Round-trip fidelity (v0.3)." },
+        "term_values":          { "type": "array", "description": "termselect values (object_term_values). Round-trip fidelity (v0.3).", "items": { "$ref": "#/$defs/TermValue" } },
+        "_raw":                 { "type": "object", "description": "Opaque snapshot of exact pre-transform column values for byte-fidelity restore. Consumer-defined; non-Anton producers SHOULD omit. Round-trip fidelity (v0.3)." }
       }
     },
 
@@ -113,8 +116,28 @@
         "keywords":             { "type": "array", "items": { "$ref": "#/$defs/AuthorityReference" } },
         "places":               { "type": "array", "items": { "$ref": "#/$defs/AuthorityReference" } },
         "files":                { "type": "array", "items": { "$ref": "#/$defs/File" } },
-        "nara_category":        { "$ref": "#/$defs/NaraCategory" }
+        "nara_category":        { "$ref": "#/$defs/NaraCategory" },
+        "formset_id":           { "type": ["integer", "string", "null"], "description": "Which ObjectForm/Objectformtype produced the record — governs which fields exist. Round-trip fidelity (v0.3)." },
+        "term_values":          { "type": "array", "description": "termselect values (object_term_values). Round-trip fidelity (v0.3).", "items": { "$ref": "#/$defs/TermValue" } },
+        "_raw":                 { "type": "object", "description": "Opaque snapshot of exact pre-transform column values for byte-fidelity restore. Consumer-defined; non-Anton producers SHOULD omit. Round-trip fidelity (v0.3)." }
       }
+    },
+
+    "TermValue": {
+      "type": "object",
+      "description": "A termselect value: a controlled term chosen for a specific antonfield (e.g. Reproduktionsbestimmungen). `antonfield` names the field; the term is referenced by `term_id` (same-tenant) and/or `taxonomy` + `name` (portable). Round-trip fidelity (v0.3).",
+      "additionalProperties": true,
+      "required": ["antonfield"],
+      "properties": {
+        "antonfield": { "type": "string", "minLength": 1 },
+        "term_id":    { "type": "integer", "minimum": 1 },
+        "taxonomy":   { "type": "string", "minLength": 1 },
+        "name":       { "type": "string", "minLength": 1 }
+      },
+      "anyOf": [
+        { "required": ["term_id"] },
+        { "required": ["name"] }
+      ]
     },
 
     "NaraCategory": {
@@ -212,7 +235,8 @@
         "city":            { "type": "string" },
         "state":           { "type": "string" },
         "country_code":    { "type": "string" },
-        "address":         { "type": "string" }
+        "address":         { "type": "string" },
+        "notes":           { "type": "array", "description": "Notes on the authority record itself (e.g. actor biography / bioghist). Reuses the object Note shape. Round-trip fidelity (v0.3).", "items": { "$ref": "#/$defs/Note" } }
       }
     },
 
@@ -298,7 +322,11 @@
         "pronom_id":      { "type": "string" },
         "nara_risk":      { "type": "string", "enum": ["low", "moderate", "high", "unknown"] },
         "nara_category":  { "$ref": "#/$defs/NaraCategory" },
-        "exiftool":       { "type": "object" }
+        "exiftool":       { "type": "object" },
+        "collection_name":       { "type": "string", "description": "Anton media collection (image / audio / video / application). Round-trip fidelity (v0.3)." },
+        "file_name":             { "type": "string", "description": "Stored original filename (may differ from display `name`). Round-trip fidelity (v0.3)." },
+        "generated_conversions": { "type": "object", "description": "Per-derivative conversion state (e.g. { \"web\": { \"width\": 800, \"height\": 600 }, \"thumb\": true }), so the consumer can restore or re-drive conversions. Round-trip fidelity (v0.3)." },
+        "av_duration_seconds":   { "type": ["number", "string"], "description": "Audio/video duration in seconds. Round-trip fidelity (v0.3)." }
       }
     }
   }
