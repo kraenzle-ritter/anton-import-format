@@ -109,7 +109,7 @@ final class ValidatorTest extends TestCase
     public function test_no_version_warning_when_versions_match(): void
     {
         $result = $this->validator->validateWithVersionWarning([
-            'version' => '0.4',
+            'version' => '0.5',
             'tenant' => 'x',
             'generator' => 'y',
             'entries' => [],
@@ -149,6 +149,87 @@ final class ValidatorTest extends TestCase
             ],
         ]);
         $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    /**
+     * v0.5 — a file may say what the producer's format rules did to it
+     * (anton#654). Additive/optional; the entry is shaped like Anton's
+     * `format-normalization` medium event.
+     */
+    public function test_file_with_format_normalization_is_valid(): void
+    {
+        $result = $this->validator->validate($this->documentWithNormalization([
+            'rule' => 'tiff_zip',
+            'status' => 'ok',
+            'phase' => 'preingest',
+            'details' => [
+                'rule' => 'tiff_zip',
+                'source' => 'agate',
+                'tools' => ['tiffcp' => '4.7.1'],
+                'before' => ['md5' => str_repeat('a', 32), 'sha512' => str_repeat('b', 128), 'size' => 13126, 'pronom' => 'fmt/353', 'mime' => 'image/tiff'],
+                'after' => ['md5' => str_repeat('c', 32), 'sha512' => str_repeat('d', 128), 'size' => 1300, 'pronom' => 'fmt/353', 'mime' => 'image/tiff'],
+                'verification' => ['command' => 'pixel_signature', 'passed' => true],
+                'original' => 'discarded',
+            ],
+        ]));
+        $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    public function test_format_normalization_with_unknown_status_is_invalid(): void
+    {
+        $result = $this->validator->validate($this->documentWithNormalization([
+            'rule' => 'tiff_zip',
+            'status' => 'converted',
+            'details' => [],
+        ]));
+        $this->assertFalse($result->valid);
+    }
+
+    public function test_format_normalization_without_rule_is_invalid(): void
+    {
+        $result = $this->validator->validate($this->documentWithNormalization([
+            'status' => 'ok',
+            'details' => [],
+        ]));
+        $this->assertFalse($result->valid);
+    }
+
+    public function test_format_normalization_with_malformed_checksum_is_invalid(): void
+    {
+        $result = $this->validator->validate($this->documentWithNormalization([
+            'rule' => 'tiff_zip',
+            'status' => 'ok',
+            'details' => ['before' => ['md5' => 'not-a-checksum']],
+        ]));
+        $this->assertFalse($result->valid);
+    }
+
+    /**
+     * @param  array<string, mixed>  $normalization
+     * @return array<string, mixed>
+     */
+    private function documentWithNormalization(array $normalization): array
+    {
+        return [
+            'version' => '0.5',
+            'tenant' => null,
+            'generator' => 'agate@0.1.0',
+            'entries' => [
+                [
+                    'type' => 'record',
+                    'uuid' => '66666666-6666-6666-6666-666666666666',
+                    'title' => ['de' => 'Umgepacktes TIFF'],
+                    'files' => [
+                        [
+                            'name' => 'scan.tif',
+                            'mime_type' => 'image/tiff',
+                            'md5sum' => str_repeat('c', 32),
+                            'format_normalization' => [$normalization],
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 
     /**

@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.5.0 — format normalization on files (2026-10-15)
+
+Additive minor: an optional `format_normalization` list on `File`, so a
+producer that applies the format rules of `kraenzle-ritter/format-policy`
+before delivery (agate, agate#9) can say what it did to each file. Anton turns
+every entry into a `format-normalization` medium event, which keeps the
+checksum of the file the producer received on record (anton#654).
+Backward-compatible: documents without the field validate unchanged, and agate
+documents that already carried it (through `additionalProperties`) now have it
+shape-checked.
+
+### Added
+
+- **`format_normalization`** on `File`: a list of `FormatNormalization`
+  entries, one per rule that applied, `{ rule, status, phase, details }`.
+  `status` is `ok` (converted), `failed` or `info` (received file kept).
+  `md5sum` on the file is the checksum after the conversion; the received
+  file's is in `details.before`.
+- `$defs/FormatNormalization` and `$defs/FileFixity` (`md5`, `sha512`, `size`,
+  `pronom`, `mime` for `details.before` and `details.after`).
+- `SchemaLoader::SCHEMA_ID` and the schema `$id` bumped to `0.5`.
+- `ValidatorTest`: one valid and three invalid normalization entries.
+
 ## v0.4.0 — portable authority identity (2026-07-08)
 
 Additive minor: an optional `uuid` (and `match_by: "uuid"`) on inline authority
