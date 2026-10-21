@@ -109,7 +109,7 @@ final class ValidatorTest extends TestCase
     public function test_no_version_warning_when_versions_match(): void
     {
         $result = $this->validator->validateWithVersionWarning([
-            'version' => '0.5',
+            'version' => '0.6',
             'tenant' => 'x',
             'generator' => 'y',
             'entries' => [],
@@ -226,6 +226,116 @@ final class ValidatorTest extends TestCase
                             'md5sum' => str_repeat('c', 32),
                             'format_normalization' => [$normalization],
                         ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * v0.6 — `File` stays the master; kept versions and a delivered access
+     * copy ride along (#3, anton#700). Additive/optional.
+     */
+    public function test_file_with_versions_and_access_copy_is_valid(): void
+    {
+        $result = $this->validator->validate($this->documentWithFile([
+            'format_normalization' => [[
+                'rule' => 'tiff_zip',
+                'status' => 'ok',
+                'phase' => 'preingest',
+                'details' => ['original' => 'kept'],
+            ]],
+            'versions' => [[
+                'role' => 'original',
+                'file_path' => 'originals/scan.tif',
+                'name' => 'scan.tif',
+                'mime_type' => 'image/tiff',
+                'md5sum' => str_repeat('a', 32),
+                'sha512' => str_repeat('b', 128),
+                'size_bytes' => 13126,
+                'pronom_id' => 'fmt/353',
+            ]],
+            'access_copy' => [
+                'file_path' => 'representations/rep2/data/scan.jpg',
+                'mime_type' => 'image/jpeg',
+                'md5sum' => str_repeat('e', 32),
+                'source' => 'rep2',
+            ],
+        ]));
+        $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    public function test_file_with_several_versions_is_valid(): void
+    {
+        $version = ['role' => 'original', 'file_path' => 'a.tif', 'mime_type' => 'image/tiff', 'md5sum' => str_repeat('a', 32)];
+        $result = $this->validator->validate($this->documentWithFile([
+            'versions' => [$version, ['file_path' => 'b.tif', 'md5sum' => str_repeat('b', 32)] + $version],
+        ]));
+        $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    public function test_version_with_unknown_role_is_invalid(): void
+    {
+        $result = $this->validator->validate($this->documentWithFile([
+            'versions' => [['role' => 'unknown', 'file_path' => 'a.tif', 'mime_type' => 'image/tiff', 'md5sum' => str_repeat('a', 32)]],
+        ]));
+        $this->assertFalse($result->valid);
+    }
+
+    public function test_version_without_role_is_invalid(): void
+    {
+        $result = $this->validator->validate($this->documentWithFile([
+            'versions' => [['file_path' => 'a.tif', 'mime_type' => 'image/tiff', 'md5sum' => str_repeat('a', 32)]],
+        ]));
+        $this->assertFalse($result->valid);
+    }
+
+    public function test_version_without_md5sum_is_invalid(): void
+    {
+        $result = $this->validator->validate($this->documentWithFile([
+            'versions' => [['role' => 'original', 'file_path' => 'a.tif', 'mime_type' => 'image/tiff']],
+        ]));
+        $this->assertFalse($result->valid);
+    }
+
+    public function test_access_copy_without_file_path_is_invalid(): void
+    {
+        $result = $this->validator->validate($this->documentWithFile([
+            'access_copy' => ['mime_type' => 'image/jpeg', 'md5sum' => str_repeat('e', 32)],
+        ]));
+        $this->assertFalse($result->valid);
+    }
+
+    public function test_access_copy_as_list_is_invalid(): void
+    {
+        $result = $this->validator->validate($this->documentWithFile([
+            'access_copy' => [['file_path' => 'a.jpg', 'mime_type' => 'image/jpeg', 'md5sum' => str_repeat('e', 32)]],
+        ]));
+        $this->assertFalse($result->valid);
+    }
+
+    /**
+     * @param  array<string, mixed>  $fields
+     * @return array<string, mixed>
+     */
+    private function documentWithFile(array $fields): array
+    {
+        return [
+            'version' => '0.6',
+            'tenant' => null,
+            'generator' => 'agate@0.1.0',
+            'entries' => [
+                [
+                    'type' => 'record',
+                    'uuid' => '77777777-7777-7777-7777-777777777777',
+                    'title' => ['de' => 'Scan mit Original'],
+                    'files' => [
+                        [
+                            'name' => 'scan.tif',
+                            'file_path' => 'representations/rep1/data/scan.tif',
+                            'mime_type' => 'image/tiff',
+                            'md5sum' => str_repeat('c', 32),
+                        ] + $fields,
                     ],
                 ],
             ],

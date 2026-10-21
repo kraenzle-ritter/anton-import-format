@@ -60,6 +60,19 @@ collects maps cleanly into the v0.1 file schema:
 | `modified`       | passes through. agate's `File:FileModifyDate` from ExifTool — Anton ignores it for v0.1, may map to a future `modified_at` field. |
 | `exiftool: {...}` | `exiftool` as a free-form object (already in schema as `type: object`). |
 
+### Kept versions and access copy (v0.6)
+
+`File` is always the **master**: the file the consumer keeps, checks and derives from. Two optional fields carry further files of the same object:
+
+| Field | Anton target | Content |
+|---|---|---|
+| `versions[]`, `role: "original"` | `media_versions` (via `OriginalRegistrar`) | a file kept behind the master, e.g. the file agate received before a conversion; then `format_normalization[].details.original` is `kept` |
+| `access_copy` (at most one) | slot of the `web` derivative | the delivered access copy; Anton adopts it or derives its own, per tenant setting |
+
+Each entry: `file_path`, `mime_type`, `md5sum` (required); `name`, `size_bytes`, `pronom_id`, `sha512`, `source` (e.g. E-ARK representation `rep2`) optional. For an E-ARK package the representation with the master function becomes `File`, never a version. `original` is the only role; a consumer rejects a role it does not know instead of skipping it.
+
+**Write these fields only to a consumer that reads them.** `File` allows additional properties and a different `version` only yields the warning `schema_version_mismatch`, so an importer before v0.6 drops `versions[]` and `access_copy` without a word, and with them a kept master. Anton reports the format version its importer reads in full (anton#700); a producer writes v0.6 fields only when Anton reports 0.6 or later, and v0.5 otherwise.
+
 ## Per-entry mapping (Excel-Import side)
 
 Anton's `anton:import file.xlsx --dump-metadata-json` emits the same

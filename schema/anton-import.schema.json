@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kraenzle-ritter.ch/schemas/anton-import/0.5/schema.json",
+  "$id": "https://kraenzle-ritter.ch/schemas/anton-import/0.6/schema.json",
   "title": "Anton Import Format",
-  "description": "Canonical JSON shape for Anton's metadata.json import contract. v0.5 — adds an optional `format_normalization` list on `File`: what the producer's format rules (kraenzle-ritter/format-policy) did to the file before delivery, one entry per rule, shaped like Anton's `format-normalization` medium event (anton#654). Additive and optional. v0.4 — adds an optional `uuid` (and `match_by: \"uuid\"`) to inline authority specs, so actors/places/keywords carry a portable stable identity and a round-trip re-anchors them by uuid instead of collapsing same-label records (anton#231, rdf-bundle-reimport). Additive and optional — pre-v0.4 documents (and external producers such as agate) continue to validate unchanged. v0.3 added optional round-trip fidelity fields (`formset_id`, `term_values`, `_raw`, authority-host `notes`, media identity); v0.2 added `nara_category`; v0.2.1 added `Note.tracks`.",
+  "description": "Canonical JSON shape for Anton's metadata.json import contract. v0.6 — adds two optional fields on `File`, which stays the master: `versions[]`, files kept behind the master (`role: \"original\"`, e.g. the file before a producer-side conversion), and `access_copy`, at most one delivered access copy (#3, anton#700). Additive and optional, but a consumer that does not read v0.6 drops both silently, so producers write them only to a consumer that reports v0.6 or later. v0.5 — adds an optional `format_normalization` list on `File`: what the producer's format rules (kraenzle-ritter/format-policy) did to the file before delivery, one entry per rule, shaped like Anton's `format-normalization` medium event (anton#654). Additive and optional. v0.4 — adds an optional `uuid` (and `match_by: \"uuid\"`) to inline authority specs, so actors/places/keywords carry a portable stable identity and a round-trip re-anchors them by uuid instead of collapsing same-label records (anton#231, rdf-bundle-reimport). Additive and optional — pre-v0.4 documents (and external producers such as agate) continue to validate unchanged. v0.3 added optional round-trip fidelity fields (`formset_id`, `term_values`, `_raw`, authority-host `notes`, media identity); v0.2 added `nara_category`; v0.2.1 added `Note.tracks`.",
 
   "type": "object",
   "additionalProperties": true,
@@ -332,7 +332,43 @@
           "type": "array",
           "description": "What the producer's format rules did to this file before delivery, one entry per rule that applied (v0.5, anton#654). `md5sum` above is the checksum of the file as delivered to Anton, i.e. after a conversion; the checksum of the file the producer received is in `details.before`.",
           "items": { "$ref": "#/$defs/FormatNormalization" }
+        },
+        "versions": {
+          "type": "array",
+          "description": "Files kept behind the master, e.g. the file the producer received before a conversion (then `format_normalization[].details.original` is `kept`). The consumer stores them as versions of the medium (Anton: `media_versions`), not as media of their own (v0.6, #3).",
+          "items": { "$ref": "#/$defs/FileVersion" }
+        },
+        "access_copy": {
+          "$ref": "#/$defs/FileCopy",
+          "description": "The access copy delivered with the master, at most one. The consumer decides whether to adopt it or to derive its own (Anton: per-tenant `derive`/`adopt`, slot of the `web` derivative) (v0.6, #3)."
         }
+      }
+    },
+
+    "FileCopy": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["file_path", "mime_type", "md5sum"],
+      "description": "A further file belonging to a `File`, delivered in the same package (v0.6).",
+      "properties": {
+        "file_path":  { "type": "string", "minLength": 1, "description": "Path in the package, like `File.file_path`." },
+        "name":       { "type": "string", "minLength": 1 },
+        "mime_type":  { "type": "string", "minLength": 1 },
+        "md5sum":     { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+        "sha512":     { "type": "string", "pattern": "^[a-f0-9]{128}$" },
+        "size_bytes": { "type": "integer", "minimum": 0 },
+        "pronom_id":  { "type": "string" },
+        "source":     { "type": "string", "minLength": 1, "description": "Where the file comes from, for traceability, e.g. the E-ARK representation (\"rep2\")." }
+      }
+    },
+
+    "FileVersion": {
+      "allOf": [{ "$ref": "#/$defs/FileCopy" }],
+      "type": "object",
+      "required": ["role"],
+      "description": "A file kept behind the master (v0.6). A role the consumer does not know is an error, never skipped.",
+      "properties": {
+        "role": { "type": "string", "enum": ["original"], "description": "`original`: the file before a conversion or migration." }
       }
     },
 

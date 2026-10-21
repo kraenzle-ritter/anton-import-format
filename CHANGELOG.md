@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.6.0 — kept versions and access copy (2026-10-21)
+
+Additive minor: two optional fields on `File`, so a producer can deliver more than the master for one object (#3). `File` stays the master. Anton's importer reads them with anton#700; agate writes them with agate#15.
+
+**Not silently backward-compatible on the consumer side.** An importer that does not read v0.6 drops both fields through `additionalProperties`, and with them a kept original. Producers write them only to a consumer that reports it reads v0.6 (see `docs/producers.md`).
+
+### Added
+
+- **`versions`** on `File`: a list of `FileVersion` entries, files kept behind the master. `role` is required; the only value is `original` (the file before a conversion or migration). Anton stores them in `media_versions`.
+- **`access_copy`** on `File`: at most one `FileCopy`, the delivered access copy. Anton puts it in the slot of the `web` derivative or derives its own.
+- `$defs/FileCopy` (`file_path`, `mime_type`, `md5sum` required; `name`, `sha512`, `size_bytes`, `pronom_id`, `source` optional) and `$defs/FileVersion` (`FileCopy` plus `role`).
+- `SchemaLoader::SCHEMA_ID` and the schema `$id` bumped to `0.6`.
+- `ValidatorTest`: two valid and five invalid cases.
+
 ## v0.5.0 — format normalization on files (2026-10-15)
 
 Additive minor: an optional `format_normalization` list on `File`, so a
