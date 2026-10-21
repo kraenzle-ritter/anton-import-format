@@ -1,13 +1,26 @@
 # anton-import-format
 
-Canonical JSON Schema (Draft 2020-12) and a framework-free PHP Validator
-for the `metadata.json` shape that Anton's importers consume.
+Canonical specification of the formats Anton's importers consume — and a
+framework-free PHP Validator for the JSON one.
 
-This package is the single source of truth for "what does an Anton-import
-look like" — used both by Anton itself (read-side validation in
+Anton accepts data in **two input shapes**, and this package is the single
+source of truth for both:
+
+| Shape | Carrier | Spec | Validator here |
+|---|---|---|---|
+| **JSON wrapper** | `metadata.json` | this README + [JSON Schema](schema/) | yes — `Validator` |
+| **Tabular (Excel)** | `.xlsx` spreadsheet | [`docs/tabular-format.md`](docs/tabular-format.md) | no (validated in Anton) |
+
+The **JSON wrapper** is used by Anton itself (read-side validation in
 `AgateImportHelper`, write-side dump via `anton:import --dump-metadata-json`)
 and by external producers (notably [agate](https://github.com/kraenzle-ritter/agate),
-the digital-preservation pipeline).
+the digital-preservation pipeline). The rest of this README documents it and
+its `Validator`.
+
+The **tabular (Excel) format** is the flat, column-based shape archivists
+author by hand for data migration and bulk cataloguing. It is not JSON, so it
+has no schema or validator in this package — but its canonical specification
+lives here: [`docs/tabular-format.md`](docs/tabular-format.md).
 
 ## Install
 
