@@ -71,7 +71,9 @@ collects maps cleanly into the v0.1 file schema:
 
 Each entry: `file_path`, `mime_type`, `md5sum` (required); `name`, `size_bytes`, `pronom_id`, `sha512`, `source` (e.g. E-ARK representation `rep2`) optional. For an E-ARK package the representation with the master function becomes `File`, never a version. `original` is the only role; a consumer rejects a role it does not know instead of skipping it.
 
-**Write these fields only to a consumer that reads them.** `File` allows additional properties and a different `version` only yields the warning `schema_version_mismatch`, so an importer before v0.6 drops `versions[]` and `access_copy` without a word, and with them a kept master. Anton reports the format version its importer reads in full (anton#700); a producer writes v0.6 fields only when Anton reports 0.6 or later, and v0.5 otherwise.
+**Paths.** `file_path` of a version or access copy is relative to the same content folder as the master's: in a BagIt bag `data/content/`, where `source` is traceability only. In an E-ARK package `source` names the representation the file lies in, and `file_path` is relative to its `data/` folder: `representations/<source>/data/<file_path>`, `rep1` when `source` is absent. Anton verifies the file against that representation's METS and refuses a `source` that names no representation of the package (anton#700).
+
+**Write these fields only to a consumer that reads them.** `File` allows additional properties and a different `version` only yields the warning `schema_version_mismatch`, so an importer before v0.6 drops `versions[]` and `access_copy` without a word, and with them a kept master. Anton reports the format version its importer reads in full on `GET /api/import-format` (`{"reads": "0.6", "schema": "…"}`, same token as the SIP import; an Anton without the endpoint answers 404 and reads 0.5). A producer writes v0.6 fields only when `reads` is 0.6 or later, and v0.5 otherwise. Anton refuses a document whose `version` is newer than `reads`.
 
 ## Per-entry mapping (Excel-Import side)
 
