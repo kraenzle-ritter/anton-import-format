@@ -1,5 +1,12 @@
 # anton-import-format
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="art/pelikan-dark.png">
+    <img src="art/pelikan.png" alt="A pelican, drawn in the style of a wood engraving" width="280">
+  </picture>
+</p>
+
 [![Test](https://github.com/kraenzle-ritter/anton-import-format/actions/workflows/test.yml/badge.svg)](https://github.com/kraenzle-ritter/anton-import-format/actions/workflows/test.yml)
 [![Latest Version](https://img.shields.io/packagist/v/kraenzle-ritter/anton-import-format)](https://packagist.org/packages/kraenzle-ritter/anton-import-format)
 [![Downloads](https://img.shields.io/packagist/dt/kraenzle-ritter/anton-import-format)](https://packagist.org/packages/kraenzle-ritter/anton-import-format)
