@@ -1,5 +1,12 @@
 # anton-import-format
 
+[![Test](https://github.com/kraenzle-ritter/anton-import-format/actions/workflows/test.yml/badge.svg)](https://github.com/kraenzle-ritter/anton-import-format/actions/workflows/test.yml)
+[![Latest Version](https://img.shields.io/packagist/v/kraenzle-ritter/anton-import-format)](https://packagist.org/packages/kraenzle-ritter/anton-import-format)
+[![Downloads](https://img.shields.io/packagist/dt/kraenzle-ritter/anton-import-format)](https://packagist.org/packages/kraenzle-ritter/anton-import-format)
+[![GitHub Release](https://img.shields.io/github/v/release/kraenzle-ritter/anton-import-format)](https://github.com/kraenzle-ritter/anton-import-format/releases)
+[![License](https://img.shields.io/github/license/kraenzle-ritter/anton-import-format)](LICENSE)
+[![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-blue)](https://www.php.net/)
+
 Canonical specification of the formats Anton's importers consume — and a
 framework-free PHP Validator for the JSON one.
 
