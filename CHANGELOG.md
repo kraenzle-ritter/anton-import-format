@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.7.0 — external identifiers on authority references (2026-11-05)
+
+Additive minor: an optional `resources` list on inline authority specs, so a producer can name an actor, place or keyword by its GND or Wikidata entry and not only by its label. Anton's importer searches by the identifier before `match_by` (anton#814).
+
+**Not silently backward-compatible on the consumer side.** An importer that does not read v0.7 drops the field through `additionalProperties`, and the reference falls back to the label. Producers write it only to a consumer that reports it reads v0.7 (see `docs/producers.md`).
+
+**Stricter for documents that already carried the field.** It used to pass unchecked; now it is shape-checked whatever `version` a document declares. A numeric `provider_id` or a `url` that is not http(s) is invalid.
+
+### Added
+
+- **`resources`** on `AuthorityInlineSpec`: a list of `AuthorityResource` entries. The id-form of a reference takes no `resources`.
+- `$defs/AuthorityResource`: `provider` and `provider_id` required (non-blank strings), `url` optional (http or https).
+- `SchemaLoader::SCHEMA_ID` and the schema `$id` bumped to `0.7`.
+- `ValidatorTest`: two valid cases, eight malformed `resources`, one id-form with `resources`.
+
 ## v0.6.0 — kept versions and access copy (2026-10-21)
 
 Additive minor: two optional fields on `File`, so a producer can deliver more than the master for one object (#3). `File` stays the master. Anton's importer reads them with anton#700; agate writes them with agate#15.

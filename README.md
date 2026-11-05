@@ -163,6 +163,12 @@ Two mutually-exclusive forms:
 
 Both default from the wrapper's `defaults` object; per-spec values override.
 
+An inline reference can also carry external identifiers, which a consumer searches by before `match_by` (v0.7, see `docs/producers.md`):
+
+```json
+"resources": [{ "provider": "gnd", "provider_id": "118540238" }]
+```
+
 ### Multilingual content
 
 Keys are ISO-639-1 two-letter codes (`de`, `fr`, `en`, `it`). The

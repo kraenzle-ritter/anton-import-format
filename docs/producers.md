@@ -75,6 +75,27 @@ Each entry: `file_path`, `mime_type`, `md5sum` (required); `name`, `size_bytes`,
 
 **Write these fields only to a consumer that reads them.** `File` allows additional properties and a different `version` only yields the warning `schema_version_mismatch`, so an importer before v0.6 drops `versions[]` and `access_copy` without a word, and with them a kept master. Anton reports the format version its importer reads in full on `GET /api/import-format` (`{"reads": "0.6", "schema": "…"}`, same token as the SIP import; an Anton without the endpoint answers 404 and reads 0.5). A producer writes v0.6 fields only when `reads` is 0.6 or later, and v0.5 otherwise. Anton refuses a document whose `version` is newer than `reads`.
 
+### External identifiers on authority references (v0.7)
+
+An inline reference to an actor, place or keyword can carry its identifiers in external registers:
+
+```json
+"actor": {
+  "label": { "de": "Goethe, Johann Wolfgang" },
+  "type": "person",
+  "resources": [
+    { "provider": "gnd", "provider_id": "118540238" },
+    { "provider": "wikidata", "provider_id": "Q5879" }
+  ]
+}
+```
+
+Each entry: `provider` and `provider_id` (required, strings), `url` (optional, http or https). `provider_id` is a string even where it looks like a number. Write `url` where the consumer cannot build the link itself; Anton builds it for `gnd` and `wikidata`.
+
+Anton searches by the identifier first, then by `match_by`. A record found by its label that holds a different identifier of the same provider counts as a namesake, and Anton creates a separate record. A record that lacks the identifier gets it added (anton#814).
+
+**Write this field only to a consumer that reads it.** An importer before v0.7 ignores `resources` and matches by the label alone, which can link the wrong namesake. A producer writes it only when `reads` on `GET /api/import-format` is 0.7 or later.
+
 ## Per-entry mapping (Excel-Import side)
 
 Anton's `anton:import file.xlsx --dump-metadata-json` emits the same

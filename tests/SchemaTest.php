@@ -29,7 +29,7 @@ final class SchemaTest extends TestCase
 
     public function test_schema_version_helper_returns_major_minor(): void
     {
-        $this->assertSame('0.6', SchemaLoader::schemaVersion());
+        $this->assertSame('0.7', SchemaLoader::schemaVersion());
     }
 
     /**

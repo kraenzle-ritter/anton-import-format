@@ -109,7 +109,7 @@ final class ValidatorTest extends TestCase
     public function test_no_version_warning_when_versions_match(): void
     {
         $result = $this->validator->validateWithVersionWarning([
-            'version' => '0.6',
+            'version' => '0.7',
             'tenant' => 'x',
             'generator' => 'y',
             'entries' => [],
@@ -149,6 +149,95 @@ final class ValidatorTest extends TestCase
             ],
         ]);
         $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    /**
+     * v0.7 — inline authority specs may name the authority in external
+     * registers (anton#814). Additive/optional, on all three kinds of
+     * reference, with or without a link.
+     */
+    public function test_inline_authority_with_resources_is_valid(): void
+    {
+        $resources = [
+            ['provider' => 'gnd', 'provider_id' => '118540238'],
+            ['provider' => 'wikidata', 'provider_id' => 'Q5879', 'url' => 'https://www.wikidata.org/wiki/Q5879'],
+        ];
+        $reference = ['label' => ['de' => 'Goethe, Johann Wolfgang'], 'resources' => $resources];
+
+        $result = $this->validator->validate($this->documentWithAuthorities($reference));
+
+        $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    public function test_inline_authority_with_empty_resources_is_valid(): void
+    {
+        $reference = ['label' => ['de' => 'Goethe, Johann Wolfgang'], 'resources' => []];
+
+        $result = $this->validator->validate($this->documentWithAuthorities($reference));
+
+        $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    /**
+     * @dataProvider malformedResourceProvider
+     */
+    public function test_inline_authority_with_malformed_resources_is_invalid(mixed $resources): void
+    {
+        $reference = ['label' => ['de' => 'Goethe, Johann Wolfgang'], 'resources' => $resources];
+
+        $result = $this->validator->validate($this->documentWithAuthorities($reference));
+
+        $this->assertFalse($result->valid);
+    }
+
+    /**
+     * @return iterable<string, array{0: mixed}>
+     */
+    public static function malformedResourceProvider(): iterable
+    {
+        yield 'not a list' => [['provider' => 'gnd', 'provider_id' => '118540238']];
+        yield 'bare identifier' => [['118540238']];
+        yield 'no provider' => [[['provider_id' => '118540238']]];
+        yield 'no provider_id' => [[['provider' => 'gnd']]];
+        yield 'empty provider' => [[['provider' => '', 'provider_id' => '118540238']]];
+        yield 'blank provider_id' => [[['provider' => 'gnd', 'provider_id' => ' ']]];
+        yield 'numeric provider_id' => [[['provider' => 'gnd', 'provider_id' => 118540238]]];
+        yield 'url of another scheme' => [[['provider' => 'gnd', 'provider_id' => '118540238', 'url' => 'javascript:alert(1)']]];
+    }
+
+    /**
+     * The id-form names an existing record and carries nothing else.
+     */
+    public function test_id_reference_with_resources_is_invalid(): void
+    {
+        $reference = ['id' => 42, 'resources' => [['provider' => 'gnd', 'provider_id' => '118540238']]];
+
+        $result = $this->validator->validate($this->documentWithAuthorities($reference));
+
+        $this->assertFalse($result->valid);
+    }
+
+    /**
+     * @param  array<string, mixed>  $reference
+     * @return array<string, mixed>
+     */
+    private function documentWithAuthorities(array $reference): array
+    {
+        return [
+            'version' => '0.7',
+            'tenant' => null,
+            'generator' => 'agate@0.1.0',
+            'entries' => [
+                [
+                    'type' => 'record',
+                    'uuid' => '88888888-8888-8888-8888-888888888888',
+                    'title' => ['de' => 'Mit Normdaten'],
+                    'events' => [['type' => 'creation', 'actor' => $reference]],
+                    'keywords' => [$reference],
+                    'places' => [$reference],
+                ],
+            ],
+        ];
     }
 
     /**
