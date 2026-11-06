@@ -153,6 +153,19 @@ If `defaults` is omitted, the schema-level fallbacks apply:
   individual inline-form entries. Producer is responsible for the
   split heuristic.
 
+### Actors as descriptors (v0.8)
+
+An actor can stand on an entry in two ways. In `events` it has a role, a date and a place. In `actors` it is a descriptor beside `keywords` and `places`, without any of those. Both take the same references.
+
+```json
+"actors": [
+  { "label": { "de": "Goethe, Johann Wolfgang" }, "type": "person", "resources": [{ "provider": "gnd", "provider_id": "118540238" }] },
+  { "id": 7 }
+]
+```
+
+**Write this field only to a consumer that reads it.** An importer before v0.8 ignores `actors`, and the descriptors are lost. A producer writes it only when `reads` on `GET /api/import-format` is 0.8 or later.
+
 ## What producers MAY skip
 
 - `tenant` (set to `null` or omit entirely if unknown).
@@ -160,6 +173,6 @@ If `defaults` is omitted, the schema-level fallbacks apply:
 - `match_by` / `on_not_found` on individual specs (inherits from
   `defaults` or schema-level).
 - Empty arrays — `events: []` may be omitted; same for `notes`,
-  `keywords`, `places`, `languages`, `files`.
+  `keywords`, `places`, `actors`, `languages`, `files`.
 - Optional file-level fields (everything except `name`, `mime_type`,
   `md5sum`).

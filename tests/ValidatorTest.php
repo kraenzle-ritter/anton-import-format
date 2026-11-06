@@ -109,7 +109,7 @@ final class ValidatorTest extends TestCase
     public function test_no_version_warning_when_versions_match(): void
     {
         $result = $this->validator->validateWithVersionWarning([
-            'version' => '0.7',
+            'version' => '0.8',
             'tenant' => 'x',
             'generator' => 'y',
             'entries' => [],
@@ -149,6 +149,54 @@ final class ValidatorTest extends TestCase
             ],
         ]);
         $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    /**
+     * v0.8 — actors as descriptors, on both kinds of entry (anton#825).
+     */
+    public function test_entries_with_actors_are_valid(): void
+    {
+        $actors = [['label' => ['de' => 'Goethe, Johann Wolfgang'], 'type' => 'person'], ['id' => 7]];
+
+        $result = $this->validator->validate([
+            'version' => '0.8',
+            'tenant' => null,
+            'generator' => 'agate@0.1.0',
+            'entries' => [
+                ['type' => 'collection', 'uuid' => '88888888-8888-8888-8888-888888888881', 'title' => ['de' => 'Bestand'], 'actors' => $actors],
+                ['type' => 'record', 'uuid' => '88888888-8888-8888-8888-888888888882', 'title' => ['de' => 'Brief'], 'actors' => $actors],
+            ],
+        ]);
+
+        $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    /**
+     * @dataProvider malformedActorsProvider
+     */
+    public function test_entries_with_malformed_actors_are_invalid(mixed $actors): void
+    {
+        $result = $this->validator->validate([
+            'version' => '0.8',
+            'tenant' => null,
+            'generator' => 'agate@0.1.0',
+            'entries' => [
+                ['type' => 'record', 'uuid' => '88888888-8888-8888-8888-888888888882', 'title' => ['de' => 'Brief'], 'actors' => $actors],
+            ],
+        ]);
+
+        $this->assertFalse($result->valid);
+    }
+
+    /**
+     * @return iterable<string, array{0: mixed}>
+     */
+    public static function malformedActorsProvider(): iterable
+    {
+        yield 'not a list' => [['label' => ['de' => 'Goethe']]];
+        yield 'bare name' => [['Goethe']];
+        yield 'neither id nor label' => [[['type' => 'person']]];
+        yield 'id and label' => [[['id' => 7, 'label' => ['de' => 'Goethe']]]];
     }
 
     /**

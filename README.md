@@ -124,7 +124,7 @@ Each entry is a `collection` or `record` and includes (among others):
   Keys MUST be ISO-639-1 two-letter codes.
 - `parent` — object reference: `{uuid: "..."}` (preferred), or
   `{identifier: "..."}` / `{id: 42}` for already-persisted parents.
-- `events`, `notes`, `keywords`, `places`, `languages` — see below.
+- `events`, `notes`, `keywords`, `places`, `actors`, `languages` — see below. `actors` (v0.8) are actors as descriptors, without date or place; with a date or a role they go in `events`.
 - `files` — only on `record` entries. Each file has at minimum
   `name`, `mime_type`, `md5sum`.
 

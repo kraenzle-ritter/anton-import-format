@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.8.0 — actors as descriptors (2026-11-06)
+
+Additive minor: an optional `actors` list on entries, an `AuthorityReference[]` like `keywords` and `places`. It carries an actor without date or place. An actor with a date or a role still goes in `events` (anton#825).
+
+**Not silently backward-compatible on the consumer side.** An importer that does not read v0.8 drops the field through `additionalProperties`. Producers write it only to a consumer that reports it reads v0.8 (see `docs/producers.md`).
+
+### Added
+
+- **`actors`** on `CollectionEntry` and `RecordEntry`.
+- `SchemaLoader::SCHEMA_ID` and the schema `$id` bumped to `0.8`.
+- `ValidatorTest`: valid on both kinds of entry, malformed references invalid.
+
 ## v0.7.0 — external identifiers on authority references (2026-11-05)
 
 Additive minor: an optional `resources` list on inline authority specs, so a producer can name an actor, place or keyword by its GND or Wikidata entry and not only by its label. Anton's importer searches by the identifier before `match_by` (anton#814).
