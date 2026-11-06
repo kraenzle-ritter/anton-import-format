@@ -109,7 +109,7 @@ final class ValidatorTest extends TestCase
     public function test_no_version_warning_when_versions_match(): void
     {
         $result = $this->validator->validateWithVersionWarning([
-            'version' => '0.8',
+            'version' => '0.9',
             'tenant' => 'x',
             'generator' => 'y',
             'entries' => [],
@@ -149,6 +149,59 @@ final class ValidatorTest extends TestCase
             ],
         ]);
         $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function documentWithSuggestion(mixed $suggestion): array
+    {
+        return [
+            'version' => '0.9',
+            'tenant' => null,
+            'generator' => 'agate@0.1.0',
+            'entries' => [
+                ['type' => 'record', 'uuid' => '88888888-8888-8888-8888-888888888883', 'title' => ['de' => 'Brief'], 'suggestions' => [$suggestion]],
+            ],
+        ];
+    }
+
+    /**
+     * v0.9 — links as proposals rather than facts (anton#819).
+     */
+    public function test_entries_with_suggestions_are_valid(): void
+    {
+        foreach ([
+            ['kind' => 'keyword', 'reference' => ['label' => ['de' => 'Bergbau']]],
+            ['kind' => 'actor', 'reference' => ['id' => 7], 'candidates' => [['id' => 7], ['id' => 8]], 'confidence' => 'hoch', 'evidence' => 'im Text', 'source' => 'Werkzeug'],
+            ['kind' => 'actor', 'reference' => ['label' => ['de' => 'Goethe']], 'link_as' => 'event', 'event' => ['type' => 'creation', 'date_start' => '1900-01-01']],
+        ] as $suggestion) {
+            $result = $this->validator->validate($this->documentWithSuggestion($suggestion));
+
+            $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+        }
+    }
+
+    /**
+     * @dataProvider malformedSuggestionProvider
+     */
+    public function test_entries_with_malformed_suggestions_are_invalid(mixed $suggestion): void
+    {
+        $this->assertFalse($this->validator->validate($this->documentWithSuggestion($suggestion))->valid);
+    }
+
+    /**
+     * @return iterable<string, array{0: mixed}>
+     */
+    public static function malformedSuggestionProvider(): iterable
+    {
+        yield 'no kind' => [['reference' => ['id' => 7]]];
+        yield 'unknown kind' => [['kind' => 'person', 'reference' => ['id' => 7]]];
+        yield 'no reference' => [['kind' => 'actor']];
+        yield 'event without event' => [['kind' => 'actor', 'reference' => ['id' => 7], 'link_as' => 'event']];
+        yield 'event for a place' => [['kind' => 'place', 'reference' => ['id' => 7], 'link_as' => 'event', 'event' => ['type' => 'creation']]];
+        yield 'unknown link' => [['kind' => 'actor', 'reference' => ['id' => 7], 'link_as' => 'fact']];
+        yield 'candidate without id' => [['kind' => 'actor', 'reference' => ['id' => 7], 'candidates' => [['label' => 'x']]]];
     }
 
     /**

@@ -166,6 +166,29 @@ An actor can stand on an entry in two ways. In `events` it has a role, a date an
 
 **Write this field only to a consumer that reads it.** An importer before v0.8 ignores `actors`, and the descriptors are lost. A producer writes it only when `reads` on `GET /api/import-format` is 0.8 or later.
 
+### Links as proposals (v0.9)
+
+Where a link is a guess rather than a fact, it goes in `suggestions`. The consumer keeps it for a person to decide on: nothing is linked and no authority record created before someone confirms, and there is no threshold above which it happens on its own.
+
+```json
+"suggestions": [
+  {
+    "kind": "actor",
+    "reference": { "label": { "de": "Goethe, J. W." } },
+    "candidates": [{ "id": 42 }],
+    "link_as": "event",
+    "event": { "type": "creation", "date_start": "1900-01-01" },
+    "confidence": "hoch",
+    "evidence": "Passage the proposal rests on",
+    "source": "Name of the tool"
+  }
+]
+```
+
+`kind` is `actor`, `place` or `keyword`. `link_as` is `descriptor` by default; `event` is for actors and needs `event`. A proposal made once is not made again on the same entry, also if it was discarded.
+
+**Write this field only to a consumer that reads it.** An importer before v0.9 ignores `suggestions`. A producer writes it only when `reads` on `GET /api/import-format` is 0.9 or later.
+
 ## What producers MAY skip
 
 - `tenant` (set to `null` or omit entirely if unknown).
@@ -173,6 +196,6 @@ An actor can stand on an entry in two ways. In `events` it has a role, a date an
 - `match_by` / `on_not_found` on individual specs (inherits from
   `defaults` or schema-level).
 - Empty arrays — `events: []` may be omitted; same for `notes`,
-  `keywords`, `places`, `actors`, `languages`, `files`.
+  `keywords`, `places`, `actors`, `suggestions`, `languages`, `files`.
 - Optional file-level fields (everything except `name`, `mime_type`,
   `md5sum`).

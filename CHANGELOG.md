@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.9.0 — links as proposals (2026-11-06)
+
+Additive minor: an optional `suggestions` list on entries. It carries links proposed for a person to decide on, not facts: a consumer keeps them and links nothing, and creates no authority record, before someone confirms (anton#819).
+
+**Not silently backward-compatible on the consumer side.** An importer that does not read v0.9 drops the field through `additionalProperties`. Producers write it only to a consumer that reports it reads v0.9 (see `docs/producers.md`).
+
+### Added
+
+- **`suggestions`** on `CollectionEntry` and `RecordEntry`, `$defs/Suggestion`: `kind` and `reference` required; optional `candidates`, `link_as` (`descriptor`, or `event` for actors, with `event`), `confidence`, `evidence`, `source`.
+- `SchemaLoader::SCHEMA_ID` and the schema `$id` bumped to `0.9`.
+- `ValidatorTest`: valid proposals, seven malformed ones.
+
 ## v0.8.0 — actors as descriptors (2026-11-06)
 
 Additive minor: an optional `actors` list on entries, an `AuthorityReference[]` like `keywords` and `places`. It carries an actor without date or place. An actor with a date or a role still goes in `events` (anton#825).
