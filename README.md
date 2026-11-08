@@ -128,6 +128,10 @@ Each entry is a `collection` or `record` and includes (among others):
 - `files` — only on `record` entries. Each file has at minimum
   `name`, `mime_type`, `md5sum`.
 
+### Relations
+
+`relations` (v0.10), beside `entries`: typed relations between keywords, actors, places and records, such as broader terms or «see also». Each has a `name`, a `source` and a `target`; an end is `{entity, authority}` for an authority record or `{entity: "object", object}` for a record. See [docs/producers.md](docs/producers.md#relations-between-entities-v010).
+
 ### References to other AntonObjects
 
 Use `parent` or any other object-reference slot with the resolution order

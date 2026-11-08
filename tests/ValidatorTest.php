@@ -109,7 +109,7 @@ final class ValidatorTest extends TestCase
     public function test_no_version_warning_when_versions_match(): void
     {
         $result = $this->validator->validateWithVersionWarning([
-            'version' => '0.9',
+            'version' => '0.10',
             'tenant' => 'x',
             'generator' => 'y',
             'entries' => [],
@@ -164,6 +164,67 @@ final class ValidatorTest extends TestCase
                 ['type' => 'record', 'uuid' => '88888888-8888-8888-8888-888888888883', 'title' => ['de' => 'Brief'], 'suggestions' => [$suggestion]],
             ],
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function documentWithRelation(mixed $relation): array
+    {
+        return [
+            'version' => '0.10',
+            'tenant' => null,
+            'generator' => 'anton@0.124.0',
+            'entries' => [],
+            'relations' => [$relation],
+        ];
+    }
+
+    /**
+     * v0.10 — relations between entities (anton#706).
+     */
+    public function test_relations_are_valid(): void
+    {
+        $letter = ['entity' => 'keyword', 'authority' => ['uuid' => '11111111-1111-1111-1111-111111111111', 'label' => ['de' => 'Brief'], 'match_by' => 'uuid', 'on_not_found' => 'create']];
+        $writing = ['entity' => 'keyword', 'authority' => ['label' => ['de' => 'Schrift']]];
+
+        foreach ([
+            ['name' => 'broader', 'source' => $letter, 'target' => $writing, 'is_primary' => true],
+            ['name' => 'isRelatedTo', 'source' => $letter, 'target' => ['entity' => 'object', 'object' => ['uuid' => '88888888-8888-8888-8888-888888888883']], 'comment' => null, 'position' => null],
+            ['name' => 'livedIn', 'source' => ['entity' => 'actor', 'authority' => ['label' => ['de' => 'Goethe']]], 'target' => ['entity' => 'place', 'authority' => ['label' => ['de' => 'Weimar']]], 'date_text' => '1775–1832', 'date_start' => '1775', 'date_end' => '1832'],
+        ] as $relation) {
+            $result = $this->validator->validate($this->documentWithRelation($relation));
+
+            $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+        }
+    }
+
+    /**
+     * @dataProvider malformedRelationProvider
+     */
+    public function test_malformed_relations_are_invalid(mixed $relation): void
+    {
+        $this->assertFalse($this->validator->validate($this->documentWithRelation($relation))->valid);
+    }
+
+    /**
+     * @return iterable<string, array{0: mixed}>
+     */
+    public static function malformedRelationProvider(): iterable
+    {
+        $keyword = ['entity' => 'keyword', 'authority' => ['label' => ['de' => 'Brief']]];
+        $record = ['entity' => 'object', 'object' => ['uuid' => '88888888-8888-8888-8888-888888888883']];
+
+        yield 'no name' => [['source' => $keyword, 'target' => $keyword]];
+        yield 'name with a space' => [['name' => 'broader term', 'source' => $keyword, 'target' => $keyword]];
+        yield 'no target' => [['name' => 'broader', 'source' => $keyword]];
+        yield 'unknown entity' => [['name' => 'broader', 'source' => ['entity' => 'page', 'authority' => ['label' => ['de' => 'x']]], 'target' => $keyword]];
+        yield 'end without reference' => [['name' => 'broader', 'source' => ['entity' => 'keyword'], 'target' => $keyword]];
+        yield 'record given as authority' => [['name' => 'isRelatedTo', 'source' => ['entity' => 'object', 'authority' => ['label' => ['de' => 'x']]], 'target' => $keyword]];
+        yield 'keyword given as record' => [['name' => 'isRelatedTo', 'source' => ['entity' => 'keyword', 'object' => ['uuid' => '88888888-8888-8888-8888-888888888883']], 'target' => $record]];
+        yield 'both references' => [['name' => 'isRelatedTo', 'source' => ['entity' => 'keyword', 'authority' => ['label' => ['de' => 'x']], 'object' => ['id' => 3]], 'target' => $record]];
+        yield 'authority by id' => [['name' => 'broader', 'source' => ['entity' => 'keyword', 'authority' => ['id' => 3]], 'target' => $keyword]];
+        yield 'primary as text' => [['name' => 'broader', 'source' => $keyword, 'target' => $keyword, 'is_primary' => 'yes']];
     }
 
     /**

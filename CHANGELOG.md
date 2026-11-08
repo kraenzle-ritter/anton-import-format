@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.10.0 — relations between entities (2026-11-08)
+
+Additive minor: an optional top-level `relations` list, beside `entries`. It carries typed relations between keywords, actors, places and records as Anton stores them: broader and narrower terms, «see also», and the other types of `kraenzle-ritter/entity-relations`. With it Anton's native round-trip keeps them (anton#706).
+
+**Not silently backward-compatible on the consumer side.** An importer that does not read v0.10 drops the list through `additionalProperties`. Producers write it only to a consumer that reports it reads v0.10 (see `docs/producers.md`).
+
+### Added
+
+- **`relations`** at the top level, `$defs/Relation` (`name`, `source`, `target` required; optional `is_primary`, `position`, `comment`, `label`, `date_text`, `date_start`, `date_end`) and `$defs/RelationEnd` (`entity` with either an inline `authority` for keywords, actors and places, or an `object` reference for records).
+- `SchemaLoader::SCHEMA_ID` and the schema `$id` bumped to `0.10`.
+- `ValidatorTest`: three valid relations, ten malformed ones.
+
 ## v0.9.0 — links as proposals (2026-11-06)
 
 Additive minor: an optional `suggestions` list on entries. It carries links proposed for a person to decide on, not facts: a consumer keeps them and links nothing, and creates no authority record, before someone confirms (anton#819).

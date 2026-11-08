@@ -189,6 +189,30 @@ Where a link is a guess rather than a fact, it goes in `suggestions`. The consum
 
 **Write this field only to a consumer that reads it.** An importer before v0.9 ignores `suggestions`. A producer writes it only when `reads` on `GET /api/import-format` is 0.9 or later.
 
+### Relations between entities (v0.10)
+
+Typed relations between keywords, actors, places and records go in a top-level `relations` list, beside `entries`. Each relation is written as the consumer stores it: under the type's canonical name, from source to target. A narrower term is therefore a `broader` relation from the narrower to the broader one. An authority end is given like an inline reference on an entry; a record end by `uuid` (or `identifier`). The consumer reads the relations after the entries, so an end may name a record of the same document.
+
+```json
+"relations": [
+  {
+    "name": "broader",
+    "source": { "entity": "keyword", "authority": { "uuid": "…", "label": { "de": "Brief" }, "match_by": "uuid", "on_not_found": "create" } },
+    "target": { "entity": "keyword", "authority": { "label": { "de": "Schrift" } } },
+    "is_primary": true
+  },
+  {
+    "name": "isRelatedTo",
+    "source": { "entity": "keyword", "authority": { "label": { "de": "Brief" } } },
+    "target": { "entity": "object", "object": { "uuid": "…" } }
+  }
+]
+```
+
+`is_primary` marks the broader term that decides the place in the tree; `position`, `comment`, `label`, `date_text`, `date_start` and `date_end` are optional. A name the consumer does not know is kept as given.
+
+**Write this field only to a consumer that reads it.** An importer before v0.10 ignores `relations`. A producer writes it only when `reads` on `GET /api/import-format` is 0.10 or later.
+
 ## What producers MAY skip
 
 - `tenant` (set to `null` or omit entirely if unknown).
