@@ -213,6 +213,21 @@ Typed relations between keywords, actors, places and records go in a top-level `
 
 **Write this field only to a consumer that reads it.** An importer before v0.10 ignores `relations`. A producer writes it only when `reads` on `GET /api/import-format` is 0.10 or later.
 
+### Labels of controlled terms (v0.11)
+
+An entry names its object type by the term's name (`"object_type": "Brief"`), a termselect value by taxonomy and name (`term_values[].taxonomy`, `.name`). Where the consumer may lack such a term, list it once in a top-level `terms` list with its labels; the consumer creates a missing term with them and leaves a term it has as it is.
+
+```json
+"terms": [
+  { "taxonomy": "object_type", "name": "file", "label": { "de": "Mischkonvolut", "en": "File", "fr": "Dossier" } },
+  { "taxonomy": "reproduction_terms", "name": "frei", "label": { "de": "frei" } }
+]
+```
+
+`plural` is optional, like `label` keyed by locale. A name the list does not hold is still a valid reference; the consumer then labels a new term with its name.
+
+**Write this field only to a consumer that reads it.** An importer before v0.11 ignores `terms`. A producer writes it only when `reads` on `GET /api/import-format` is 0.11 or later.
+
 ## What producers MAY skip
 
 - `tenant` (set to `null` or omit entirely if unknown).

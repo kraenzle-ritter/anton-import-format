@@ -132,6 +132,10 @@ Each entry is a `collection` or `record` and includes (among others):
 
 `relations` (v0.10), beside `entries`: typed relations between keywords, actors, places and records, such as broader terms or «see also». Each has a `name`, a `source` and a `target`; an end is `{entity, authority}` for an authority record or `{entity: "object", object}` for a record. See [docs/producers.md](docs/producers.md#relations-between-entities-v010).
 
+### Terms
+
+`terms` (v0.11), beside `entries`: the labels of the controlled terms that entries name by taxonomy and name, the object type (`object_type`) and termselect values (`term_values`). Each has `taxonomy` and `name`, optionally `label` and `plural` per locale. See [docs/producers.md](docs/producers.md#labels-of-controlled-terms-v011).
+
 ### References to other AntonObjects
 
 Use `parent` or any other object-reference slot with the resolution order

@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.11.0 — labels of controlled terms (2026-11-21)
+
+Additive minor: `object_type` declared on entries, and an optional top-level `terms` list beside `entries`. Entries name a controlled term by taxonomy and name (`object_type`, `term_values`); `terms` carries its labels, so a consumer that lacks the term creates it labelled as the producer had it, translations and plurals included. Without it, Anton's native round trip into a fresh installation labelled a missing object type with its bare name (anton#861).
+
+**Not silently backward-compatible on the consumer side.** An importer that does not read v0.11 drops `terms` through `additionalProperties`. Producers write it only to a consumer that reports it reads v0.11 (see `docs/producers.md`). `object_type` itself is unchanged: it travelled undeclared since v0.3.
+
+### Added
+
+- **`terms`** at the top level, `$defs/Term` (`taxonomy`, `name` required; optional `label`, `plural` as `MultilingualString`).
+- **`object_type`** declared on `CollectionEntry` and `RecordEntry`: a non-empty string, the term's name.
+- `SchemaLoader::SCHEMA_ID` and the schema `$id` bumped to `0.11`.
+- `ValidatorTest`: valid terms, five malformed ones, an empty object type.
+
 ## v0.10.0 — relations between entities (2026-11-08)
 
 Additive minor: an optional top-level `relations` list, beside `entries`. It carries typed relations between keywords, actors, places and records as Anton stores them: broader and narrower terms, «see also», and the other types of `kraenzle-ritter/entity-relations`. With it Anton's native round-trip keeps them (anton#706).

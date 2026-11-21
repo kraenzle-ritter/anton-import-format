@@ -109,7 +109,7 @@ final class ValidatorTest extends TestCase
     public function test_no_version_warning_when_versions_match(): void
     {
         $result = $this->validator->validateWithVersionWarning([
-            'version' => '0.10',
+            'version' => '0.11',
             'tenant' => 'x',
             'generator' => 'y',
             'entries' => [],
@@ -178,6 +178,65 @@ final class ValidatorTest extends TestCase
             'entries' => [],
             'relations' => [$relation],
         ];
+    }
+
+    /**
+     * @param  list<mixed>  $terms
+     * @return array<string, mixed>
+     */
+    private function documentWithTerms(array $terms, string $objectType = 'Brief'): array
+    {
+        return [
+            'version' => '0.11',
+            'tenant' => null,
+            'generator' => 'anton@0.129.0',
+            'entries' => [[
+                'uuid' => '88888888-8888-8888-8888-888888888881',
+                'type' => 'record',
+                'title' => ['de' => 'Ein Brief'],
+                'object_type' => $objectType,
+                'term_values' => [['antonfield' => 'object.reproduction', 'taxonomy' => 'reproduction_terms', 'name' => 'frei']],
+            ]],
+            'terms' => $terms,
+        ];
+    }
+
+    /**
+     * v0.11 — labels of the controlled terms (anton#861).
+     */
+    public function test_terms_are_valid(): void
+    {
+        $result = $this->validator->validate($this->documentWithTerms([
+            ['taxonomy' => 'object_type', 'name' => 'Brief', 'label' => ['de' => 'Brief', 'en' => 'Letter'], 'plural' => ['de' => 'Briefe']],
+            ['taxonomy' => 'reproduction_terms', 'name' => 'frei'],
+        ]));
+
+        $this->assertTrue($result->valid, (string) json_encode($result->toArray()));
+    }
+
+    /**
+     * @dataProvider malformedTermProvider
+     */
+    public function test_malformed_terms_are_invalid(mixed $term): void
+    {
+        $this->assertFalse($this->validator->validate($this->documentWithTerms([$term]))->valid);
+    }
+
+    /**
+     * @return iterable<string, array{0: mixed}>
+     */
+    public static function malformedTermProvider(): iterable
+    {
+        yield 'no taxonomy' => [['name' => 'Brief']];
+        yield 'no name' => [['taxonomy' => 'object_type']];
+        yield 'empty name' => [['taxonomy' => 'object_type', 'name' => '']];
+        yield 'label as text' => [['taxonomy' => 'object_type', 'name' => 'Brief', 'label' => 'Brief']];
+        yield 'label keyed by a long locale' => [['taxonomy' => 'object_type', 'name' => 'Brief', 'label' => ['deu' => 'Brief']]];
+    }
+
+    public function test_an_empty_object_type_is_invalid(): void
+    {
+        $this->assertFalse($this->validator->validate($this->documentWithTerms([], ''))->valid);
     }
 
     /**
